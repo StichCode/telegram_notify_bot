@@ -29,42 +29,46 @@ async def callback_message_handler(
         )
         return
 
-    if stage == StagesUser.mail:
-        context.user_data[KeysStorage.stage] = StagesUser.writing
-        context.user_data[KeysStorage.message] = update.message.text
-        await context.bot.send_message(
-            update.effective_user.id,
-            text='Вы уверены что хотите разослать это сообщение:\n\n{}'.format(update.message.text),
-            reply_markup=InlineKeyboardMarkup(
-                inline_keyboard=[
-                    [
-                        InlineKeyboardButton("Да", callback_data=CallbackKeys.accept_msg),
-                        InlineKeyboardButton("Нет", callback_data=CallbackKeys.cancel_msg)
-                    ]
-                ],
-            ),
-        )
-    elif stage == StagesUser.choose_column_s:
-        context.user_data[KeysStorage.stage] = StagesUser.choose_column_e
-        context.user_data[KeysStorage.column_name] = update.message.text
-        await context.bot.send_message(
-            update.effective_user.id,
-            text='Вы уверены что ввели верное название колонки?:\n{}'.format(update.message.text),
-            reply_markup=InlineKeyboardMarkup(
-                inline_keyboard=[
-                    [
-                        InlineKeyboardButton("Да", callback_data=CallbackKeys.accept_name),
-                        InlineKeyboardButton("Нет", callback_data=CallbackKeys.cancel_name)
-                    ]
-                ],
-            ),
-        )
+    match stage:
+        case StagesUser.create_message:
+            context.user_data[KeysStorage.message] = update.message.text
+            text = 'Вы уверены что хотите разослать это сообщение:\n\n{}'.format(update.message.text)
+            buttons = [
+                InlineKeyboardButton("Да", callback_data=CallbackKeys.accept_msg),
+                InlineKeyboardButton("Нет", callback_data=CallbackKeys.cancel_msg)
+            ]
+        case StagesUser.column_name | StagesUser.column_phone:
+            if StagesUser.column_name:
+                context.user_data[KeysStorage.column_phone] = update.message.text
+            else:
+                context.user_data[KeysStorage.column_name] = update.message.text
 
-    elif stage == StagesUser.administration:
-        # todo: найти юзера в кэше и если он там есть, то добавить в админов
-        await context.bot.send_message(
-            update.effective_user.id,
-            text='Пользователь {} успешно повышен до администратора!'.format(update.message.text),
-        )
+            text = 'Вы уверены что ввели верное название для колонки c {}?'.format(
+                'именами пользователей' if StagesUser.column_name else 'номерами телефонов пользователей'
+            )
+            buttons = [
+                InlineKeyboardButton(
+                    "Да",
+                    callback_data=CallbackKeys.accept_name if StagesUser.column_name else CallbackKeys.accept_phone
+                ),
+                InlineKeyboardButton(
+                    "Нет",
+                    callback_data=CallbackKeys.cancel_name if StagesUser.column_name else CallbackKeys.cancel_phone
+                )
+            ]
+        case StagesUser.administration:
+            # todo: найти юзера в кэше и если он там есть, то добавить в админов
+            text = 'Пользователь {} успешно повышен до администратора!'.format(update.message.text)
+            buttons = []
 
+        case _:
+            logger.error('Something strange happens with stage: `{}`'.format(stage))
+            return
 
+    await context.bot.send_message(
+        update.effective_user.id,
+        text=text,
+        reply_markup=InlineKeyboardMarkup(
+            inline_keyboard=[buttons]
+        ) if buttons else None,
+    )

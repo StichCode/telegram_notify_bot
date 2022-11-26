@@ -2,13 +2,12 @@ from enum import StrEnum
 
 
 class StagesUser(StrEnum):
-    start = 'start'
-    mail = 'waiting'
-    writing = 'writing'
+    create_message = 'create_message'
+
     choose_column_s = 'choose_column_s'
     choose_column_e = 'choose_column_e'
 
-    column_ids = 'columns_ids'
+    column_name = 'columns_ids'
     column_phone = 'column_phone'
 
     upload_file = 'upload_file'
@@ -22,7 +21,6 @@ class StagesUser(StrEnum):
 class KeysStorage(StrEnum):
     stage = 'stage'
     message = 'message'
-    column_id = 'column_id'
     column_phone = 'column_id'
 
     column_name = 'column_name'
@@ -39,8 +37,8 @@ class CallbackKeys(StrEnum):
     accept_msg = 'accept_msg'
     cancel_msg = 'cancel_msg'
 
-    accept_id = 'accept_id'
-    cancel_id = 'cancel_id'
+    accept_phone = 'accept_id'
+    cancel_phone = 'cancel_id'
 
     accept_name = 'accept_name'
     cancel_name = 'cancel_name'

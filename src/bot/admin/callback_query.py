@@ -38,7 +38,7 @@ async def callback_query_handler(
 
     match choice:
         case CallbackKeys.cancel_msg:
-            context.user_data[KeysStorage.stage] = StagesUser.mail
+            context.user_data[KeysStorage.stage] = StagesUser.create_message
             text = 'Введите сообщение по новой!'
         case CallbackKeys.accept_msg:
             context.user_data[KeysStorage.stage] = StagesUser.choose_column_s
@@ -100,7 +100,7 @@ async def callback_query_handler(
                 return
             # default
             logger.error('Something wrong: stage: {}, user: {}, callback: {}'.format(stage, q.message.id, choice))
-            text = 'Что-то произошло не так, попробуйте начать с начал:3'
+            text = 'Что-то произошло не так, попробуйте начать с начала:3'
 
     await context.bot.edit_message_text(
         chat_id=q.message.chat_id,

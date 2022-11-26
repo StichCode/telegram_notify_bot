@@ -19,9 +19,8 @@ async def mail_handler(
         logger.info('User {} try to get admins route'.format(update.effective_user.name))
         return
 
-    context.user_data[KeysStorage.stage] = StagesUser.start
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
         text='Перед началом рассылки введите сообщение для рассылки:'
     )
-    context.user_data[KeysStorage.stage] = StagesUser.mail
+    context.user_data[KeysStorage.stage] = StagesUser.create_message
