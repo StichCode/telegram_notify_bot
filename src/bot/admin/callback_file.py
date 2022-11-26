@@ -6,7 +6,7 @@ from loguru import logger
 from src.bot.admin.utils import get_file
 from src.container import Container
 from src.storage.cache import Cache
-from src.storage.enums import KeysStorage, StagesUser
+from src.storage.enums import KeysStorage, StagesUser, CallbackKeys
 
 
 @inject
@@ -66,8 +66,8 @@ async def callback_file_handler(
             reply_markup=InlineKeyboardMarkup(
                 inline_keyboard=[
                     [
-                        InlineKeyboardButton("Да", callback_data='1'),
-                        InlineKeyboardButton("Нет", callback_data='0')
+                        InlineKeyboardButton("Да", callback_data=CallbackKeys.sending),
+                        InlineKeyboardButton("Нет", callback_data=CallbackKeys.cancel)
                     ]
                 ],
             )

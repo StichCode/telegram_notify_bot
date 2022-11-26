@@ -19,8 +19,6 @@ async def mail_handler(
         logger.info('User {} try to get admins route'.format(update.effective_user.name))
         return
 
-    # todo: настройка xlsx для выбора колонки с пользователями
-
     context.user_data[KeysStorage.stage] = StagesUser.start
     await context.bot.send_message(
         chat_id=update.effective_chat.id,

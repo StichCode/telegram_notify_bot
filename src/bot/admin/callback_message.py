@@ -6,7 +6,7 @@ from loguru import logger
 
 from src.container import Container
 from src.storage.cache import Cache
-from src.storage.enums import KeysStorage, StagesUser
+from src.storage.enums import KeysStorage, StagesUser, CallbackKeys
 
 
 @inject
@@ -28,6 +28,7 @@ async def callback_message_handler(
             text='Что то произошло на сервере, попробуйте начать сначала:c'
         )
         return
+
     if stage == StagesUser.mail:
         context.user_data[KeysStorage.stage] = StagesUser.writing
         context.user_data[KeysStorage.message] = update.message.text
@@ -37,8 +38,8 @@ async def callback_message_handler(
             reply_markup=InlineKeyboardMarkup(
                 inline_keyboard=[
                     [
-                        InlineKeyboardButton("Да", callback_data='1'),
-                        InlineKeyboardButton("Нет", callback_data='0')
+                        InlineKeyboardButton("Да", callback_data=CallbackKeys.accept_msg),
+                        InlineKeyboardButton("Нет", callback_data=CallbackKeys.cancel_msg)
                     ]
                 ],
             ),
@@ -52,8 +53,8 @@ async def callback_message_handler(
             reply_markup=InlineKeyboardMarkup(
                 inline_keyboard=[
                     [
-                        InlineKeyboardButton("Да", callback_data='1'),
-                        InlineKeyboardButton("Нет", callback_data='0')
+                        InlineKeyboardButton("Да", callback_data=CallbackKeys.accept_name),
+                        InlineKeyboardButton("Нет", callback_data=CallbackKeys.cancel_name)
                     ]
                 ],
             ),

@@ -26,6 +26,9 @@ class App:
                 sys.modules["src.bot.admin.callback_file"],
                 sys.modules["src.bot.admin.callback_message"],
                 sys.modules["src.bot.admin.callback_query"],
+                sys.modules["src.bot.admin.callback_phone"],
+                sys.modules["src.bot.admin.admins"],
+
             ]
         )
         self._container.init_resources()
