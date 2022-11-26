@@ -1,4 +1,5 @@
-from telegram import Update
+from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, KeyboardButtonPollType, KeyboardButton, \
+    ReplyKeyboardMarkup
 from telegram.ext import ContextTypes
 from dependency_injector.wiring import inject, Provide
 
@@ -27,12 +28,26 @@ async def start_handler(
         # todo: do this by validator
         name=update.effective_user.name.replace('@', '')
     )
-    u = await cache.get_user_by(user.tg_id, user.name)
-    if u and len(u) > 0 and u[0]:
+    u = await cache.get_user_by(user.tg_id, user.name, first=True)
+    if u:
+        msg = 'Вы уже подписаны на нашу рассылку, как только мы будем готовы ' \
+              'мы вам напишем!'
+        footer = '\n\nС любовью @trip_for_students 🧡'
+        if not u.phone:
+            msg += '\nНо у нас всё ещё нет вашего телефона, ' \
+                   'нам будет затруднительно найти вас для рассылки вовремя, ' \
+                   'пожалуйста поделитесь с нами телефоном!:3'
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text='Вы уже подписаны на нашу рассылку, как только мы будем готовы мы вам напишем!\n\n'
-                 'С любовью @trip_for_students 🧡',
+            text=str(msg + footer),
+            reply_markup=ReplyKeyboardMarkup(
+                keyboard=[
+                    [
+                        KeyboardButton('Поделится телефоном', request_contact=True),
+                    ],
+                ],
+                one_time_keyboard=True,
+            ) if not u.phone else None
         )
         return
 
@@ -42,6 +57,14 @@ async def start_handler(
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
         text='Спасибо что подписались на нас!\n'
-             'Как только мы будем готовы, мы сообщим вам!\n\n'
+             'Предоставьте так же нам информацию о своем номере телефона, '
+             'что бы мы могли найти вас в наших списках:3\n\n'
              'С любовью @trip_for_students 🧡',
+        reply_markup=InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    KeyboardButton('Поделится телефоном', request_contact=True),
+                ]
+            ]
         )
+    )

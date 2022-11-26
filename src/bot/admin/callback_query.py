@@ -8,7 +8,7 @@ from src.bot.admin.tasks import tfs_notify_task
 from src.bot.admin.utils import get_file
 from src.container import Container
 from src.storage.cache import Cache
-from src.storage.enums import KeysStorage, StagesUser
+from src.storage.enums import KeysStorage, StagesUser, CallbackKeys
 
 
 @inject
@@ -91,15 +91,25 @@ async def callback_query_handler(
             unames = {u.name: u.tg_id for u in db_users}
             subscribed = set(get_file(file_path, column_name)) & set(unames.keys())
             users = {user: unames[user] for user in subscribed}
+
+            context.job_queue.run_once(tfs_notify_task, 1, users=users, message=msg)
+
             await context.bot.edit_message_text(
                 chat_id=q.message.chat_id,
                 message_id=q.message.message_id,
                 text='Начинаем рассылку сообщений!',
             )
 
-            await tfs_notify_task(context, users=users, message=msg)
-
             return
+
+    else:
+        if choice == CallbackKeys.create_admin:
+            await context.bot.send_message(
+                update.effective_chat.id,
+                text='Введите имя пользователя (он должен уже быть подписан на меня!',
+            )
+        elif choice == CallbackKeys.delete_admin:
+            pass
 
     logger.error('Something wrong: stage: {}, user: {}, callback: {}'.format(stage, q.message.id, choice))
     await context.bot.send_message(

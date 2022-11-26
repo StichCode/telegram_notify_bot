@@ -11,6 +11,8 @@ class StagesUser(StrEnum):
     upload_file = 'upload_file'
     pre_send = 'pre_send'
     sending = 'sending'
+
+    administration = 'administration'
     error = 'error'
 
 
@@ -19,3 +21,8 @@ class KeysStorage(StrEnum):
     message = 'message'
     column_name = 'column_name'
     file_path = 'file_path'
+
+
+class CallbackKeys(StrEnum):
+    create_admin = 'create_admin'
+    delete_admin = 'delete_admin'

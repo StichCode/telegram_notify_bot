@@ -1,5 +1,3 @@
-import traceback
-
 from loguru import logger
 
 from telegram.ext import ContextTypes

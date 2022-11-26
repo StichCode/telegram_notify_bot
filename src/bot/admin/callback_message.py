@@ -58,3 +58,11 @@ async def callback_message_handler(
             ),
         )
 
+    elif stage == StagesUser.administration:
+        # todo: найти юзера в кэше и если он там есть, то добавить в админов
+        await context.bot.send_message(
+            update.effective_user.id,
+            text='Пользователь {} успешно повышен до администратора!'.format(update.message.text),
+        )
+
+
