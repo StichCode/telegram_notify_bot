@@ -1,5 +1,4 @@
-from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, KeyboardButtonPollType, KeyboardButton, \
-    ReplyKeyboardMarkup
+from telegram import Update, KeyboardButton, ReplyKeyboardMarkup
 from telegram.ext import ContextTypes
 from dependency_injector.wiring import inject, Provide
 
@@ -60,11 +59,12 @@ async def start_handler(
              'Предоставьте так же нам информацию о своем номере телефона, '
              'что бы мы могли найти вас в наших списках:3\n\n'
              'С любовью @trip_for_students 🧡',
-        reply_markup=InlineKeyboardMarkup(
-            inline_keyboard=[
+        reply_markup=ReplyKeyboardMarkup(
+            keyboard=[
                 [
                     KeyboardButton('Поделится телефоном', request_contact=True),
-                ]
-            ]
+                ],
+            ],
+            one_time_keyboard=True,
         )
     )

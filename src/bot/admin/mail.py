@@ -5,6 +5,7 @@ from dependency_injector.wiring import inject, Provide
 from loguru import logger
 
 from src.container import Container
+from src.storage.cache import Cache
 from src.storage.enums import KeysStorage, StagesUser
 
 
@@ -12,9 +13,9 @@ from src.storage.enums import KeysStorage, StagesUser
 async def mail_handler(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
-    admins: list[int] = Provide[Container.config.provided.admin_users]
+    cache: Cache = Provide[Container.cache]
 ) -> None:
-    if update.effective_user.id not in admins:
+    if not await cache.is_admin(update.effective_user.id):
         logger.info('User {} try to get admins route'.format(update.effective_user.name))
         return
 

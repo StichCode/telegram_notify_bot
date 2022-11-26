@@ -16,8 +16,8 @@ class Cache:
     async def update_user(self, user: User) -> None:
         await self._tr.update_user(user)
 
-    async def get_all_users(self) -> list[User]:
-        return await self._tr.get_all_users()
+    async def get_all_users(self, *, only_admins: bool = False) -> list[User]:
+        return await self._tr.get_all_users(only_admins=only_admins)
 
     async def get_user_by(
         self,

@@ -14,7 +14,7 @@ async def admins_handler(
     context: ContextTypes.DEFAULT_TYPE,
     cache: Cache = Provide[Container.cache]
 ) -> None:
-    if await cache.is_admin(update.effective_user.id):
+    if not await cache.is_admin(update.effective_user.id):
         logger.info('User {} try to get admins route'.format(update.effective_user.name))
         return
 

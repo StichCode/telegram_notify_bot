@@ -13,10 +13,9 @@ from src.storage.enums import KeysStorage, StagesUser
 async def callback_file_handler(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
-    admins: list[int] = Provide[Container.config.provided.admin_users],
     cache: Cache = Provide[Container.cache]
 ) -> None:
-    if update.effective_user.id not in admins:
+    if not await cache.is_admin(update.effective_user.id):
         logger.info('User {} try to get admins route'.format(update.effective_user.name))
         return
 
@@ -62,7 +61,6 @@ async def callback_file_handler(
                     len(file_users) - len(not_subscribe),
                     len(file_users)
                 ),
-
             # todo: что бы там везде не ифать, думаю можно сделать колбэк из енама
             # todo: завести yaml с всеми сообщениями которые используются в боте
             reply_markup=InlineKeyboardMarkup(

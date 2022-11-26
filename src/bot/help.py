@@ -4,13 +4,14 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 from src.container import Container
+from src.storage.cache import Cache
 
 
 @inject
 async def help_handler(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
-    admins: list[int] = Provide[Container.config.provided.admin_users]
+    cache: Cache = Provide[Container.cache]
 ) -> None:
     text = "Команды доступны вам для использования:\n"
 
@@ -19,7 +20,7 @@ async def help_handler(
             update.effective_user.name
         )],
     ]
-    if update.effective_user.id in admins:
+    if await cache.is_admin(update.effective_user.id):
         commands = [
                 ["/mail", "Создает новую рассылку сообщений по пользователям"],
                 ["/users", "Получение пользователей подписанных на рассылку"],

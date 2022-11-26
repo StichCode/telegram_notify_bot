@@ -15,20 +15,19 @@ from src.storage.enums import KeysStorage, StagesUser, CallbackKeys
 async def callback_query_handler(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
-    admins: list[int] = Provide[Container.config.provided.admin_users],
     cache: Cache = Provide[Container.cache]
 ) -> None:
     q = update.callback_query
     await q.answer()
     choice = q.data
 
-    if update.effective_user.id not in admins:
+    if not await cache.is_admin(update.effective_user.id):
         logger.info('User {} try to get admins route'.format(update.effective_user.name))
         return
 
     stage = context.user_data.get(KeysStorage.stage, None)
     if stage is None:
-        logger.info('Something wrong with stage of user: {}'.format(stage))
+        logger.error('Something wrong with stage of user: {}'.format(stage))
         await context.bot.send_message(
             update.effective_user.id,
             text='Что то произошло на сервере, попробуйте начать сначала:c'
@@ -103,13 +102,38 @@ async def callback_query_handler(
             return
 
     else:
-        if choice == CallbackKeys.create_admin:
+        if choice in [u.name for u in await cache.get_all_users(only_admins=True)]:
+            u = await cache.get_user_by(name=choice, first=True)
+            u.admin = False
+            await cache.update_user(u)
+            await context.bot.edit_message_text(
+                chat_id=q.message.chat_id,
+                message_id=q.message.message_id,
+                text='Пользователь {} лишен прав администратора!'.format(u.name),
+            )
+
+        elif choice == CallbackKeys.create_admin:
             await context.bot.send_message(
                 update.effective_chat.id,
-                text='Введите имя пользователя (он должен уже быть подписан на меня!',
+                text='Введите имя пользователя (он должен уже быть подписан на меня!)',
             )
         elif choice == CallbackKeys.delete_admin:
-            pass
+            await context.bot.send_message(
+                update.effective_chat.id,
+                # todo: если нет пользователей для удаления надо выводить: некого понижать:D
+                text='Выберите пользователя у которого хотите убрать права администратора:',
+                reply_markup=InlineKeyboardMarkup(
+                    inline_keyboard=[
+                        [
+                            InlineKeyboardButton(u.name, callback_data=u.name)
+                            for u in await cache.get_all_users()
+                            if u.name != update.effective_user.name.replace('@', '')
+                        ]
+                    ],
+                ),
+            )
+
+        return
 
     logger.error('Something wrong: stage: {}, user: {}, callback: {}'.format(stage, q.message.id, choice))
     await context.bot.send_message(

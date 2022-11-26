@@ -26,11 +26,14 @@ class SQLTransport:
                 )
             """)
 
-    async def get_all_users(self) -> list[User]:
+    async def get_all_users(self, *, only_admins: bool = False) -> list[User]:
         users = []
         async with aiosqlite.connect(self.path) as db:
             db.row_factory = aiosqlite.Row
-            async with db.execute('select * from user;') as cursor:
+            sql = 'select * from user'
+            if only_admins:
+                sql += ' where admin = true;'
+            async with db.execute(sql) as cursor:
                 async for row in cursor:
                     users.append(User(**row))
         return users

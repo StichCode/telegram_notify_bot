@@ -2,6 +2,7 @@ from typing import Any
 
 from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, MessageHandler, filters
 
+from src.bot.admin.admins import admins_handler
 from src.bot.admin.callback_file import callback_file_handler
 from src.bot.admin.callback_message import callback_message_handler
 from src.bot.admin.callback_phone import callback_phone_handler
@@ -17,6 +18,7 @@ def get_handlers() -> list[CommandHandler[CallbackContext | Any]]:
         CommandHandler('start', start_handler),
         CommandHandler('help', help_handler),
         CommandHandler('mail', mail_handler),
+        CommandHandler('admins', admins_handler),
         MessageHandler(filters.Document.ALL, callback=callback_file_handler),
         MessageHandler(filters.CONTACT, callback=callback_phone_handler),
         MessageHandler(filters.TEXT & (~filters.COMMAND), callback_message_handler),
