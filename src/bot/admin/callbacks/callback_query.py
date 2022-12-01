@@ -81,9 +81,6 @@ async def callback_query_handler(
             db_users = await cache.get_all_users()
             users = merge_users(db_users, file_users)
             await tfs_notify_task(context, users=users, message=ud.message)
-            # loop = asyncio.get_event_loop()
-            # loop.create_task(tfs_notify_task)
-            # context.job_queue.run_once(users=users, message=ud.message)
         case CallbackKeys.cancel:
             text = 'Значит как только всё будет готово возвращайтесь к нам снова и начинайте сначала!'
 

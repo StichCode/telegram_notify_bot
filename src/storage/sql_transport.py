@@ -19,8 +19,8 @@ class SQLTransport:
             cur = await db.execute("""
                 CREATE TABLE IF NOT EXISTS user (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                tg_id INTEGER NOT NULL,
-                name TEXT NOT NULL,
+                tg_id INTEGER NOT NULL UNIQUE,
+                name TEXT NOT NULL UNIQUE,
                 admin BOOLEAN NOT NULL,
                 phone TEXT
                 )
@@ -58,6 +58,7 @@ class SQLTransport:
                 async for row in cursor:
                     users.append(User(**row))
         if first:
+            # fixme: fucking dirty hacks
             if users:
                 return users[0]
             else:
@@ -71,4 +72,4 @@ class SQLTransport:
                 [user.tg_id, user.name, user.admin]
             )
             await db.commit()
-            logger.info('saved user')
+            logger.debug(f'saved user: {user}')

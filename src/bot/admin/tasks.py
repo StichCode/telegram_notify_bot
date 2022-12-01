@@ -2,7 +2,10 @@ from loguru import logger
 
 from telegram.ext import ContextTypes
 
+from src.container import Container
 from src.dto.user import User
+from src.storage.cache import Cache
+from dependency_injector.wiring import inject, Provide
 
 
 async def tfs_notify_task(
@@ -28,3 +31,16 @@ async def tfs_notify_task(
             logger.exception(ex)
 
     logger.info('Sends {0}/{1}'.format(sends, total))
+
+
+@inject
+async def create_db(
+    _: ContextTypes.DEFAULT_TYPE,
+    cache: Cache = Provide[Container.cache]
+) -> None:
+    """
+    init db
+    :return:
+    """
+    await cache.init_db()
+    logger.info('init db complete')
