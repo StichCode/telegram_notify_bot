@@ -4,10 +4,7 @@ from enum import StrEnum
 class StagesUser(StrEnum):
     create_message = 'create_message'
 
-    choose_column_s = 'choose_column_s'
-    choose_column_e = 'choose_column_e'
-
-    column_name = 'columns_ids'
+    column_name = 'column_name'
     column_phone = 'column_phone'
 
     upload_file = 'upload_file'
@@ -15,14 +12,13 @@ class StagesUser(StrEnum):
     sending = 'sending'
 
     administration = 'administration'
-    error = 'error'
 
 
 class KeysStorage(StrEnum):
     stage = 'stage'
     message = 'message'
-    column_phone = 'column_id'
 
+    column_phone = 'column_phone'
     column_name = 'column_name'
     file_path = 'file_path'
 

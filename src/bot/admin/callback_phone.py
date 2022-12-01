@@ -1,4 +1,4 @@
-from telegram import Update
+from telegram import Update, ReplyKeyboardRemove
 from telegram.ext import ContextTypes
 from dependency_injector.wiring import inject, Provide
 
@@ -19,5 +19,6 @@ async def callback_phone_handler(
         await context.bot.send_message(
             update.effective_chat.id,
             text='Спасибо мы сохранили ваш номер 🧡',
+            reply_markup=ReplyKeyboardRemove()
         )
 

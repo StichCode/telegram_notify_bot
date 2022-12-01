@@ -13,10 +13,12 @@ from src.storage.cache import Cache
 async def start_handler(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
-    cache: Cache = Provide[Container.cache]
+    cache: Cache = Provide[Container.cache],
+    default_admins: list[int] = Provide[Container.config.provided.default_admins]
 ) -> None:
     """
     Start message for users
+    :param default_admins:
     :param cache:
     :param update:
     :param context:
@@ -25,7 +27,8 @@ async def start_handler(
     user = User(
         tg_id=update.effective_user.id,
         # todo: do this by validator
-        name=update.effective_user.name.replace('@', '')
+        name=update.effective_user.name.replace('@', ''),
+        admin=update.effective_user.id in default_admins
     )
     u = await cache.get_user_by(user.tg_id, user.name, first=True)
     if u:

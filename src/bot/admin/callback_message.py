@@ -37,23 +37,26 @@ async def callback_message_handler(
                 InlineKeyboardButton("Да", callback_data=CallbackKeys.accept_msg),
                 InlineKeyboardButton("Нет", callback_data=CallbackKeys.cancel_msg)
             ]
-        case StagesUser.column_name | StagesUser.column_phone:
-            if StagesUser.column_name:
-                context.user_data[KeysStorage.column_phone] = update.message.text
-            else:
+        case StagesUser.column_phone | StagesUser.column_name:
+            if stage == StagesUser.column_name:
                 context.user_data[KeysStorage.column_name] = update.message.text
+            else:
+                context.user_data[KeysStorage.column_phone] = update.message.text
 
-            text = 'Вы уверены что ввели верное название для колонки c {}?'.format(
-                'именами пользователей' if StagesUser.column_name else 'номерами телефонов пользователей'
+            text = 'Вы уверены что ввели верное название для колонки c {0} пользователей?\n\n`{1}`'.format(
+                'именами' if stage == StagesUser.column_name else 'номерами телефонов',
+                update.message.text
             )
             buttons = [
                 InlineKeyboardButton(
                     "Да",
-                    callback_data=CallbackKeys.accept_name if StagesUser.column_name else CallbackKeys.accept_phone
+                    callback_data=CallbackKeys.accept_name
+                    if stage == StagesUser.column_name else CallbackKeys.accept_phone
                 ),
                 InlineKeyboardButton(
                     "Нет",
-                    callback_data=CallbackKeys.cancel_name if StagesUser.column_name else CallbackKeys.cancel_phone
+                    callback_data=CallbackKeys.cancel_name
+                    if stage == StagesUser.column_name else CallbackKeys.cancel_phone
                 )
             ]
         case StagesUser.administration:

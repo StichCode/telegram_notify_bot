@@ -1,4 +1,4 @@
-from telegram import Update
+from telegram import Update, ReplyKeyboardRemove
 from telegram.ext import ContextTypes
 from dependency_injector.wiring import inject, Provide
 
@@ -15,12 +15,26 @@ async def mail_handler(
     context: ContextTypes.DEFAULT_TYPE,
     cache: Cache = Provide[Container.cache]
 ) -> None:
+    """
+    Workflow sender:
+        1. Ввод сообщения для рассылки
+        2. Ввод названия колонки с именами пользователей
+        3. Ввод названия колонки с номерами телефонов
+        4. Загрузка excel файла
+        5. Проверка пользователей и файла, а после рассылка писем
+
+    :param update:
+    :param context:
+    :param cache:
+    :return:
+    """
     if not await cache.is_admin(update.effective_user.id):
         logger.info('User {} try to get admins route'.format(update.effective_user.name))
         return
 
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text='Перед началом рассылки введите сообщение для рассылки:'
+        text='Перед началом рассылки введите сообщение для рассылки:',
+        reply_markup=ReplyKeyboardRemove()
     )
     context.user_data[KeysStorage.stage] = StagesUser.create_message

@@ -1,3 +1,6 @@
+import asyncio
+from functools import partial
+
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ContextTypes
 
@@ -5,8 +8,9 @@ from dependency_injector.wiring import inject, Provide
 from loguru import logger
 
 from src.bot.admin.tasks import tfs_notify_task
-from src.bot.admin.utils import get_file
+from src.bot.admin.utils import get_file, merge_users
 from src.container import Container
+from src.dto.user_data import UserData
 from src.storage.cache import Cache
 from src.storage.enums import KeysStorage, StagesUser, CallbackKeys
 
@@ -41,32 +45,50 @@ async def callback_query_handler(
             context.user_data[KeysStorage.stage] = StagesUser.create_message
             text = 'Введите сообщение по новой!'
         case CallbackKeys.accept_msg:
-            context.user_data[KeysStorage.stage] = StagesUser.choose_column_s
-            text = 'Ваше сообщение сохранено, теперь введите название колонки с именами пользователей в excel файле:3'
+            context.user_data[KeysStorage.stage] = StagesUser.column_name
+            text = 'Ваше сообщение сохранено, теперь введите название колонки с именами пользователей в excel файле.'
         case CallbackKeys.cancel_name:
-            context.user_data[KeysStorage.stage] = StagesUser.choose_column_s
+            context.user_data[KeysStorage.stage] = StagesUser.column_name
             text = 'Введите название колонки снова!'
         case CallbackKeys.accept_name:
+            context.user_data[KeysStorage.stage] = StagesUser.column_phone
+            text = 'Ваше название колонки с именами пользователей сохранено, ' \
+                   'теперь введите название колонки с номерами!'
+        case CallbackKeys.cancel_phone:
+            context.user_data[KeysStorage.stage] = StagesUser.column_phone
+            text = 'Введите название колонки снова!'
+        case CallbackKeys.accept_phone:
             context.user_data[KeysStorage.stage] = StagesUser.upload_file
             text = 'Ваше название колонки сохранено, теперь загрузите excel файл:3'
         case CallbackKeys.sending:
             context.user_data[KeysStorage.stage] = StagesUser.upload_file
-            text = 'Начинаем рассылку сообщений!'
-
-            # todo: лучше сделать доп проверку сверху на это всё по типу if k not in context.user_data: fail
-            msg = context.user_data.get(KeysStorage.message, None)
-            file_path = context.user_data.get(KeysStorage.file_path, None)
-            column_name = context.user_data.get(KeysStorage.column_name, None)
+            try:
+                ud = UserData(**context.user_data)
+                text = 'Начинаем рассылку сообщений!'
+            except ValueError:
+                logger.error('Bad validation for user data: {}'.format(context.user_data))
+                await context.bot.send_message(
+                    chat_id=q.message.chat_id,
+                    message_id=q.message.message_id,
+                    text='Произошла ошибка на сервере, попробуйте начать с начала:c'
+                )
+                return
+            file_users = get_file(
+                ud.file_path,
+                ud.column_name,
+                ud.column_phone
+            )
             db_users = await cache.get_all_users()
-            unames = {u.name: u.tg_id for u in db_users}
-            subscribed = set(get_file(file_path, column_name)) & set(unames.keys())
-            users = {user: unames[user] for user in subscribed}
-            context.job_queue.run_once(tfs_notify_task, 1, users=users, message=msg)
+            users = merge_users(db_users, file_users)
+            await tfs_notify_task(context, users=users, message=ud.message)
+            # loop = asyncio.get_event_loop()
+            # loop.create_task(tfs_notify_task)
+            # context.job_queue.run_once(users=users, message=ud.message)
         case CallbackKeys.cancel:
             text = 'Значит как только всё будет готово возвращайтесь к нам снова и начинайте сначала!'
 
         case CallbackKeys.create_admin:
-            await context.bot.send_message(
+            await context.bot.edit_message_text(
                 update.effective_chat.id,
                 text='Введите имя пользователя (он должен уже быть подписан на меня!)'
             )

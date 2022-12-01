@@ -1,6 +1,6 @@
 from dependency_injector.wiring import inject, Provide
 
-from telegram import Update
+from telegram import Update, ReplyKeyboardRemove
 from telegram.ext import ContextTypes
 
 from src.container import Container
@@ -30,4 +30,4 @@ async def help_handler(
     for command in commands:
         text += "{0:8s} - {1:10s}\n".format(command[0], command[1])
 
-    await context.bot.send_message(chat_id=update.effective_chat.id, text=text)
+    await context.bot.send_message(chat_id=update.effective_chat.id, text=text, reply_markup=ReplyKeyboardRemove())
