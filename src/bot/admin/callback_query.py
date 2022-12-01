@@ -112,14 +112,17 @@ async def callback_query_handler(
         case _:
             if choice in [u.name for u in admins]:
                 u = await cache.get_user_by(name=choice, first=True)
-                u.admin = False
-                await cache.update_user(u)
-                await context.bot.edit_message_text(
-                    chat_id=q.message.chat_id,
-                    message_id=q.message.message_id,
-                    text='Пользователь {} лишен прав администратора!'.format(u.name),
-                )
-                return
+                if u:
+                    u.admin = False
+                    await cache.update_user(u)
+                    await context.bot.edit_message_text(
+                        chat_id=q.message.chat_id,
+                        message_id=q.message.message_id,
+                        text='Пользователь {} лишен прав администратора!'.format(u.name),
+                    )
+                    return
+                else:
+                    logger.error('WTF with db and users')
             # default
             logger.error('Something wrong: stage: {}, user: {}, callback: {}'.format(stage, q.message.id, choice))
             text = 'Что-то произошло не так, попробуйте начать с начала:3'

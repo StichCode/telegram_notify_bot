@@ -87,6 +87,7 @@ async def callback_file_handler(
     uniq_file_users = set({(u.name, u.phone) for u in file_users})
     not_subscribe = uniq_file_users - uniq_users
 
+    # todo: сделать вывод информации о тех пользователях которые не распознались:/
     if not_subscribe:
         context.user_data[KeysStorage.stage] = StagesUser.pre_send
         await context.bot.send_message(

@@ -23,6 +23,7 @@ async def tfs_notify_task(
                 text=message,
             )
             sends += 1
+            logger.info('send {} message: {}'.format(user.tg_id, message))
         except Exception as ex:
             logger.exception(ex)
 

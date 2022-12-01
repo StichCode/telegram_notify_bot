@@ -17,6 +17,7 @@ async def callback_message_handler(
 ) -> None:
     if not await cache.is_admin(update.effective_user.id):
         logger.info('User {} try to get admins route'.format(update.effective_user.name))
+        logger.debug("User: {}, send: {}".format(update.effective_user.id, update.message.text))
         return
 
     # проверяем что стейдж пользователя позволяет сохранить сообщение

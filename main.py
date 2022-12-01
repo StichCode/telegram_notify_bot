@@ -23,6 +23,7 @@ class App:
                 sys.modules["src.bot.help"],
                 sys.modules["src.bot.start"],
                 sys.modules["src.bot.admin.mail"],
+                sys.modules["src.bot.admin.users"],
                 sys.modules["src.bot.admin.callback_file"],
                 sys.modules["src.bot.admin.callback_message"],
                 sys.modules["src.bot.admin.callback_query"],

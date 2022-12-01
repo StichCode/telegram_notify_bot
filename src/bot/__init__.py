@@ -8,6 +8,7 @@ from src.bot.admin.callback_message import callback_message_handler
 from src.bot.admin.callback_phone import callback_phone_handler
 from src.bot.admin.callback_query import callback_query_handler
 from src.bot.admin.mail import mail_handler
+from src.bot.admin.users import users_handler
 from src.bot.help import help_handler
 from src.bot.start import start_handler
 
@@ -18,6 +19,7 @@ def get_handlers() -> list[CommandHandler[CallbackContext | Any]]:
         CommandHandler('start', start_handler),
         CommandHandler('help', help_handler),
         CommandHandler('mail', mail_handler),
+        CommandHandler('users', users_handler),
         CommandHandler('admins', admins_handler),
         MessageHandler(filters.Document.ALL, callback=callback_file_handler),
         MessageHandler(filters.CONTACT, callback=callback_phone_handler),

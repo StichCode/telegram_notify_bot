@@ -40,10 +40,7 @@ class SQLTransport:
 
     async def update_user(self, u: User) -> None:
         async with aiosqlite.connect(self.path) as db:
-            await db.execute(
-                "UPDATE user SET tg_id=?, name=?, admin=?, phone=?",
-                [u.tg_id, u.name, u.admin, u.phone]
-            )
+            await db.execute("UPDATE user SET admin=?, phone=? WHERE tg_id = ?", [u.admin, u.phone, u.tg_id])
             await db.commit()
             logger.info('User something update')
 
@@ -53,15 +50,18 @@ class SQLTransport:
         tg_id: str | None = None,
         name: str | None = None,
         first: bool = False
-    ) -> list[User] | User:
+    ) -> list[User] | User | None:
         users = []
         async with aiosqlite.connect(self.path) as db:
             db.row_factory = aiosqlite.Row
             async with db.execute('select * from user where tg_id = ? OR name = ?;', [tg_id, name]) as cursor:
                 async for row in cursor:
                     users.append(User(**row))
-        if first and users:
-            return users[0]
+        if first:
+            if users:
+                return users[0]
+            else:
+                return None
         return users
 
     async def save_user(self, user: User) -> None:
