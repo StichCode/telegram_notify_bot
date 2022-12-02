@@ -1,4 +1,6 @@
 import sys
+
+import sentry_sdk
 from loguru import logger
 
 import pytz
@@ -12,10 +14,17 @@ from src.container import Container
 
 class App:
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._container = Container()
         self.__init_container()
         self._app = self._init_app()
+        self.__init_tracers()
+
+    def __init_tracers(self) -> None:
+        sentry_sdk.init(
+            dsn=self._container.config().sentry_dsn,
+            traces_sample_rate=1.0,
+        )
 
     def __init_container(self) -> None:
         self._container.wire(

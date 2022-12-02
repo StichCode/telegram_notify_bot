@@ -5,6 +5,7 @@ from pydantic.fields import Field
 class Configuration(BaseSettings):
     tg_token: str = Field(env='TG_TOKEN')
     default_admins: list[int] = Field(env='ADMIN_USERS')
+    sentry_dsn: str = Field('SENTRY_DSN')
 
     user: str = Field(env='PG_USER')
     password: str = Field(env='PG_PASSWORD')
