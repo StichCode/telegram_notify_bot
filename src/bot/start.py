@@ -1,4 +1,4 @@
-from telegram import Update, KeyboardButton, ReplyKeyboardMarkup
+from telegram import Update, KeyboardButton, ReplyKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ContextTypes
 from dependency_injector.wiring import inject, Provide
 
@@ -48,6 +48,7 @@ async def start_handler(
                         KeyboardButton('Поделится телефоном', request_contact=True),
                     ],
                 ],
+                resize_keyboard=True,
                 one_time_keyboard=True,
             ) if not u.phone else None
         )
@@ -66,8 +67,9 @@ async def start_handler(
             keyboard=[
                 [
                     KeyboardButton('Поделится телефоном', request_contact=True),
-                ],
+                ]
             ],
+            resize_keyboard=True,
             one_time_keyboard=True,
         )
     )
