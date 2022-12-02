@@ -11,7 +11,7 @@ class SQLTransport:
     # todo: use ORM
 
     def __init__(self, cfg: Configuration) -> None:
-        self.cfg = cfg
+        self.cfg = cfg.pg
 
     async def conn(self) -> Connection:
         # todo: create context
