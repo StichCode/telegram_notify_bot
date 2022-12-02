@@ -1,48 +1,54 @@
-import os.path
-from pathlib import Path
+import asyncpg
+from asyncpg.connection import Connection
+
 from loguru import logger
 
-import aiosqlite
-
+from src.config import Configuration
 from src.dto.user import User
 
 
 class SQLTransport:
-    file_name: str = 'db.sqlite'
+    # todo: use ORM
 
-    def __init__(self) -> None:
-        self.path = Path(os.path.dirname(__file__), '..', '..', self.file_name)
+    def __init__(self, cfg: Configuration) -> None:
+        self.cfg = cfg
 
-    # todo: init db
+    async def conn(self) -> Connection:
+        # todo: create context
+        return await asyncpg.connect(
+            user=self.cfg.user, password=self.cfg.password,
+            database=self.cfg.db, host=self.cfg.host, port=self.cfg.port
+        )
+
     async def create_db(self) -> None:
-        async with aiosqlite.connect(self.path) as db:
-            cur = await db.execute("""
-                CREATE TABLE IF NOT EXISTS user (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                tg_id INTEGER NOT NULL UNIQUE,
-                name TEXT NOT NULL UNIQUE,
-                admin BOOLEAN NOT NULL,
-                phone TEXT
-                )
-            """)
+        conn = await self.conn()
+        cur = await conn.execute("""
+            CREATE TABLE IF NOT EXISTS {}.user (
+            id SERIAL PRIMARY KEY,
+            tg_id INTEGER NOT NULL UNIQUE,
+            name TEXT NOT NULL UNIQUE,
+            admin BOOLEAN NOT NULL,
+            phone TEXT
+            )
+        """.format(self.cfg.schema_db))
 
     async def get_all_users(self, *, only_admins: bool = False) -> list[User]:
         users = []
-        async with aiosqlite.connect(self.path) as db:
-            db.row_factory = aiosqlite.Row
-            sql = 'select * from user'
-            if only_admins:
-                sql += ' where admin = true;'
-            async with db.execute(sql) as cursor:
-                async for row in cursor:
-                    users.append(User(**row))
+        conn = await self.conn()
+        sql = 'select * from {}.user'.format(self.cfg.schema_db)
+        if only_admins:
+            sql += ' where admin = true;'
+        db_users = await conn.fetch(sql)
+        users.extend([User(**row) for row in db_users])
         return users
 
     async def update_user(self, u: User) -> None:
-        async with aiosqlite.connect(self.path) as db:
-            await db.execute("UPDATE user SET admin=?, phone=? WHERE tg_id = ?", [u.admin, u.phone, u.tg_id])
-            await db.commit()
-            logger.info('User something update')
+        conn = await self.conn()
+        await conn.execute(
+            "UPDATE {}.user SET admin=$1, phone=$2 WHERE tg_id = $3".format(self.cfg.schema_db),
+            u.admin, u.phone, u.tg_id
+        )
+        logger.info('User something update')
 
     async def get_user_by_(
         self,
@@ -51,25 +57,28 @@ class SQLTransport:
         name: str | None = None,
         first: bool = False
     ) -> list[User] | User | None:
+        if name is None and tg_id is None:
+            # raise bad args
+            return None
         users = []
-        async with aiosqlite.connect(self.path) as db:
-            db.row_factory = aiosqlite.Row
-            async with db.execute('select * from user where tg_id = ? OR name = ?;', [tg_id, name]) as cursor:
-                async for row in cursor:
-                    users.append(User(**row))
-        if first:
-            # fixme: fucking dirty hacks
-            if users:
-                return users[0]
-            else:
-                return None
+        conn = await self.conn()
+        db_users = await conn.fetch(
+            'select * from {}.user where tg_id = $1 OR name = $2'.format(self.cfg.schema_db),
+            tg_id, name
+        )
+        users.extend([User(**row) for row in db_users])
+        # todo: dirty hack need another method
+        if users and first:
+            return users[0]
+        if not users and first:
+            return None
         return users
 
     async def save_user(self, user: User) -> None:
-        async with aiosqlite.connect(self.path) as db:
-            await db.execute(
-                "INSERT INTO user (tg_id, name, admin) VALUES (?, ?, ?)",
-                [user.tg_id, user.name, user.admin]
-            )
-            await db.commit()
-            logger.debug(f'saved user: {user}')
+        conn = await self.conn()
+        sql = 'INSERT INTO {}.user (tg_id, name, admin) ' \
+              'VALUES'.format(self.cfg.schema_db) + " ($1, $2, $3)"
+        await conn.execute(
+            sql,
+            user.tg_id, user.name, user.admin)
+        logger.debug(f'saved user: {user}')
