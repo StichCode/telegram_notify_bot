@@ -4,36 +4,55 @@ import pandas as pd
 import requests
 
 from src.dto.user import User
+from src.dto.user_data import UserData
+from src.errors import BadPhoneNumber, BadColumnName
+
+DictUser = dict[str, str]
 
 
-def get_file(file_url: str, col_name: str, col_phone: str) -> list[User] | None:
+def get_xlsx(file_url: str) -> pd.DataFrame:
     resp = requests.get(file_url, verify=False)
     df = pd.read_excel(resp.content)
-    rename_columns = {col_name: 'name', col_phone: 'phone'}
-    c: str = ''
-    try:
-        df.rename(columns={c: rename_columns[c.strip()] if c.strip() in rename_columns else c.strip() for c in df.columns},
-                  inplace=True)
-        df['name'] = df['name'].fillna('')
-        return [
-            User(tg_id=1, bad_user=True, name=u['name'], phone=u['phone'])
-            for u in df.to_dict(orient='records')
-        ]
-    except Exception as ex:
-        logger.exception(ex)
-        return None
+
+    # pre-prettify df columns
+    df.rename(columns={c: c.strip().lower() for c in df.columns}, inplace=True)
+    return df
+
+
+def get_file(ud: UserData) -> tuple[list[User] | list[DictUser]] | None:
+    df = get_xlsx(ud.file_path)
+    users = []
+    bad_data = []
+    for c in [ud.column_phone, ud.column_name]:
+        if c not in df.columns:
+            raise BadColumnName(c)
+    df[ud.column_name] = df[ud.column_name].fillna('')
+    df[ud.column_phone] = df[ud.column_phone].fillna('')
+    for u in df.to_dict(orient='records'):
+        try:
+            users.append(User(tg_id=1, name=u[ud.column_name], phone=u[ud.column_phone]))
+        except (ValueError, BadPhoneNumber) as ex:
+            bad_data.append(u)
+            logger.error("Bad data for parsing: {}".format(u))
+            logger.error(ex)
+            continue
+    return users, bad_data
 
 
 def merge_users(db_users: list[User], excel_users: list[User]) -> list[User]:
     merged = []
     for dbu in db_users:
         for exu in excel_users:
-            if (exu.phone and dbu.phone and dbu.phone == exu.phone) \
-                or (dbu.name and exu.name and dbu.name == exu.name) \
-                and exu not in merged:
+            eq_phone = exu.phone and dbu.phone and dbu.phone == exu.phone
+            eq_name = dbu.name and exu.name and dbu.name == exu.name
+            if (eq_phone or eq_name) and exu not in merged:
                 exu.name = dbu.name
                 exu.phone = dbu.phone
                 exu.tg_id = dbu.tg_id
                 merged.append(exu)
     logger.info('Merged {}, input users: {}'.format(len(merged), len(excel_users)))
     return merged
+
+
+def to_sublist(d: list, *, sep: int = 4) -> list[list]:
+    return [d[x:x + sep] for x in range(0, len(d), sep)]

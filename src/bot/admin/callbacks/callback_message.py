@@ -19,7 +19,7 @@ async def callback_message_handler(
         logger.info('User {} try to get admins route'.format(update.effective_user.name))
         logger.debug("User: {}, send: {}".format(update.effective_user.id, update.message.text))
         return
-
+    btns = None
     # проверяем что стейдж пользователя позволяет сохранить сообщение
     stage = context.user_data.get(KeysStorage.stage, None)
     if stage is None:
@@ -34,37 +34,19 @@ async def callback_message_handler(
         case StagesUser.create_message:
             context.user_data[KeysStorage.message] = update.message.text
             text = 'Вы уверены что хотите разослать это сообщение:\n\n{}'.format(update.message.text)
-            buttons = [
+            btns = [
                 InlineKeyboardButton("Да", callback_data=CallbackKeys.accept_msg),
                 InlineKeyboardButton("Нет", callback_data=CallbackKeys.cancel_msg)
             ]
-        case StagesUser.column_phone | StagesUser.column_name:
-            if stage == StagesUser.column_name:
-                context.user_data[KeysStorage.column_name] = update.message.text
-            else:
-                context.user_data[KeysStorage.column_phone] = update.message.text
-
-            text = 'Вы уверены что ввели верное название для колонки c {0} пользователей?\n\n`{1}`'.format(
-                'именами' if stage == StagesUser.column_name else 'номерами телефонов',
-                update.message.text
-            )
-            buttons = [
-                InlineKeyboardButton(
-                    "Да",
-                    callback_data=CallbackKeys.accept_name
-                    if stage == StagesUser.column_name else CallbackKeys.accept_phone
-                ),
-                InlineKeyboardButton(
-                    "Нет",
-                    callback_data=CallbackKeys.cancel_name
-                    if stage == StagesUser.column_name else CallbackKeys.cancel_phone
-                )
-            ]
         case StagesUser.administration:
             # todo: найти юзера в кэше и если он там есть, то добавить в админов
-            text = 'Пользователь {} успешно повышен до администратора!'.format(update.message.text)
-            buttons = []
-
+            u = await cache.get_user_by(name=update.message.text, first=True)
+            if not u:
+                text = 'Нет пользователя под именем {}, который был бы на меня подписан'.format(update.message.text)
+            else:
+                text = 'Пользователь {} успешно повышен до администратора!'.format(update.message.text)
+            u.admin = True
+            await cache.update_user(u)
         case _:
             logger.error('Something strange happens with stage: `{}`'.format(stage))
             return
@@ -73,6 +55,6 @@ async def callback_message_handler(
         update.effective_user.id,
         text=text,
         reply_markup=InlineKeyboardMarkup(
-            inline_keyboard=[buttons]
-        ) if buttons else None,
+            inline_keyboard=[btns]
+        ) if btns else None,
     )

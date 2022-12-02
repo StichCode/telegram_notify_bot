@@ -2,6 +2,9 @@ import re
 
 from pydantic.class_validators import validator
 from pydantic.main import BaseModel
+from loguru import logger
+
+from src.errors import BadPhoneNumber
 
 
 class User(BaseModel):
@@ -9,6 +12,9 @@ class User(BaseModel):
     name: str = ''
     phone: str | None = ''
     admin: bool = False
+
+    def __str__(self) -> str:
+        return "|{0:15s}|{1:10s}|{2:32}".format(str(self.tg_id), self.name, self.phone)
 
     @validator('name', pre=True)
     def check_name(cls, v: str) -> str | None:
@@ -18,17 +24,27 @@ class User(BaseModel):
             return ''
         return v
 
-    # @validator('phone')
-    # def check_phone(cls, v: str) -> str:
-    #     # fixme: if number like (+7/7/8) 7... - regular exception not see this number
-    #     regex = r"^(\+7|7|8)?[\s\-]?\(?[489][0-9]{2}\)?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$"
-    #     if v:
-    #         v = v.strip().replace(' ', '')
-    #     if v and not re.search(regex, v, re.I):
-    #         return None
-    #     if v:
-    #         v = v.replace('-', '').replace('(', '').replace(')', '')
-    #         s = re.search(r"^(\+7|7|8)?[\s\-]?\(?[489][0-9]{2}\)?", v).group()
-    #         if 4 <= len(s) <= 5:
-    #             v = v.replace(s, "8{}".format(s[-3:]))
-    #     return v
+    @validator('phone')
+    def check_phone(cls, v: str) -> str:
+        regex = r"^(\+7|7|8)?[\s\-]?\(?[489][0-9]{2}\)?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$"
+        if not v:
+            return ''
+        v = v.strip().replace(' ', '').replace('-', '').replace('(', '').replace(')', '')
+        v = re.search(regex, v).group()
+        if not v:
+            raise BadPhoneNumber
+        if v[0] == '+':
+            v = v[1:]
+        elif v[0] == '8':
+            v = '7{}'.format(v[1:])
+        elif v[0] == '7':
+            # normal start number
+            pass
+        else:
+            logger.error('wtf: {}'.format(v))
+        return v
+
+
+if __name__ == '__main__':
+    u = [str(i) for i in [User(tg_id=1, name='usrname', phone='79776508536'), User(tg_id=1, name='usrname', phone='79776508536')]]
+    print(str(u))

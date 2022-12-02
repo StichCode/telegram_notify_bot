@@ -3,9 +3,10 @@ from loguru import logger
 
 import pytz
 from telegram.constants import ParseMode
-from telegram.ext import ApplicationBuilder, Application, Defaults
+from telegram.ext import ApplicationBuilder, Application, Defaults, JobQueue
 
 from src.bot import get_handlers
+from src.bot.admin.tasks import create_db
 from src.container import Container
 
 
@@ -22,13 +23,13 @@ class App:
                 sys.modules[__name__],
                 sys.modules["src.bot.help"],
                 sys.modules["src.bot.start"],
-                sys.modules["src.bot.admin.mail"],
-                sys.modules["src.bot.admin.users"],
-                sys.modules["src.bot.admin.callback_file"],
-                sys.modules["src.bot.admin.callback_message"],
-                sys.modules["src.bot.admin.callback_query"],
-                sys.modules["src.bot.admin.callback_phone"],
-                sys.modules["src.bot.admin.admins"],
+                sys.modules["src.bot.admin.handlers.mail"],
+                sys.modules["src.bot.admin.handlers.users"],
+                sys.modules["src.bot.admin.callbacks.callback_file"],
+                sys.modules["src.bot.admin.callbacks.callback_message"],
+                sys.modules["src.bot.admin.callbacks.callback_query"],
+                sys.modules["src.bot.admin.callbacks.callback_phone"],
+                sys.modules["src.bot.admin.handlers.admins"],
 
             ]
         )
@@ -37,8 +38,10 @@ class App:
     def _init_app(self) -> Application:
         defaults = Defaults(parse_mode=ParseMode.HTML, tzinfo=pytz.timezone('Europe/Moscow'))
 
-        _app = ApplicationBuilder().token(self._container.config().tg_token).defaults(defaults).build()
+        _app: Application = ApplicationBuilder().token(self._container.config().tg_token).defaults(defaults).build()
         _app.add_handlers(get_handlers())
+        jq = _app.job_queue
+        jq.run_once(create_db, when=0.1, name='init_db')
 
         return _app
 

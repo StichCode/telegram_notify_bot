@@ -12,13 +12,12 @@ async def tfs_notify_task(
     context: ContextTypes.DEFAULT_TYPE,
     users: list[User],
     message: str,
-) -> None:
+) -> int:
     """
     Notify all users
     :return:
     """
     sends = 0
-    total = len(users)
     for user in users:
         try:
             await context.bot.send_message(
@@ -29,8 +28,8 @@ async def tfs_notify_task(
             logger.info('send {} message: {}'.format(user.tg_id, message))
         except Exception as ex:
             logger.exception(ex)
-
-    logger.info('Sends {0}/{1}'.format(sends, total))
+    logger.info('Sends {0}/{1}'.format(sends, len(users)))
+    return sends
 
 
 @inject

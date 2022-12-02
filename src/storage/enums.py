@@ -24,17 +24,14 @@ class KeysStorage(StrEnum):
 
 
 class CallbackKeys(StrEnum):
-    create_admin = 'create_admin'
-    delete_admin = 'delete_admin'
+    create_admin = 'createAdmin'
+    delete_admin = 'deleteAdmin'
+
+    column_phone = 'columnPhone'
+    column_name = 'columnName'
 
     sending = 'sending'
     cancel = 'cancel'
 
-    accept_msg = 'accept_msg'
-    cancel_msg = 'cancel_msg'
-
-    accept_phone = 'accept_id'
-    cancel_phone = 'cancel_id'
-
-    accept_name = 'accept_name'
-    cancel_name = 'cancel_name'
+    accept_msg = 'acceptMsg'
+    cancel_msg = 'cancelMsg'
