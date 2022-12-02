@@ -14,7 +14,7 @@ async def help_handler(
     cache: Cache = Provide[Container.cache]
 ) -> None:
     is_admin = await cache.is_admin(update.effective_user.id)
-    text = "Команды доступны вам для использования ({}):\n".format(
+    text = "Команды доступны вам для использования {}:\n".format(
         'admin' if is_admin else 'user'
     )
 
@@ -31,7 +31,7 @@ async def help_handler(
             ["/help", "Возвращает это сообщение"]
         ]
     for command in commands:
-        text += "{0}  {1}\n".format(command[0], command[1])
+        text += """{0:10s}-{1}\n""".format(command[0], command[1])
 
     await context.bot.send_message(
         chat_id=update.effective_chat.id,

@@ -26,8 +26,7 @@ async def start_handler(
     """
     user = User(
         tg_id=update.effective_user.id,
-        # todo: do this by validator
-        name=update.effective_user.name.replace('@', ''),
+        name=update.effective_user.name,
         admin=update.effective_user.id in default_admins
     )
     u = await cache.get_user_by(user.tg_id, user.name, first=True)

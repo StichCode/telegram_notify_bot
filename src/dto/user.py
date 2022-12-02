@@ -43,8 +43,3 @@ class User(BaseModel):
         else:
             logger.error('wtf: {}'.format(v))
         return v
-
-
-if __name__ == '__main__':
-    u = [str(i) for i in [User(tg_id=1, name='usrname', phone='79776508536'), User(tg_id=1, name='usrname', phone='79776508536')]]
-    print(str(u))

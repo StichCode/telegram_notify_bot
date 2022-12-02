@@ -20,6 +20,7 @@ openpyxl==3.0.10
 packaging==21.3
 pandas==1.5.2
 pluggy==1.0.0
+prettytable==3.5.0
 pyaes==1.6.1
 pyasn1==0.4.8
 pydantic==1.10.2
@@ -42,3 +43,4 @@ typing_extensions==4.4.0
 tzdata==2022.7
 tzlocal==4.2
 urllib3==1.26.13
+wcwidth==0.2.5

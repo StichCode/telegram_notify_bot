@@ -1,5 +1,8 @@
+import prettytable as pt
+
 from telegram import Update, ReplyKeyboardRemove
 from telegram.ext import ContextTypes
+from telegram.constants import ParseMode
 from dependency_injector.wiring import inject, Provide
 
 from loguru import logger
@@ -23,14 +26,14 @@ async def users_handler(
     if not await cache.is_admin(update.effective_user.id):
         logger.info('User {} try to get admins route'.format(update.effective_user.name))
         return
-
-    users = [
-        f"{u.name:15s}{'':3s}Number: {'Y' if u.phone else 'N':3s}, Admin: {'Y' if u.admin else 'N':3s} "
-        for u in await cache.get_all_users()
-    ]
+    tb = pt.PrettyTable(['Name', 'Number', 'Admin'])
+    users = await cache.get_all_users()
+    for u in users:
+        tb.add_row([u.name, f"{'Y' if u.phone else 'N':1s}", f"{'Y' if u.admin else 'N':1s}"])
 
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text='Количество пользователей в базе: {}\nПользователи:\n{}'.format(len(users), "\n".join(users)),
+        text='Количество пользователей в базе: {}\n\n{}'.format(len(users), f"```{tb}```"),
+        parse_mode=ParseMode.MARKDOWN_V2,
         reply_markup=ReplyKeyboardRemove()
     )

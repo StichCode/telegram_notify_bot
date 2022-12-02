@@ -14,7 +14,6 @@ from src.bot.start import start_handler
 
 
 def get_handlers() -> list[CommandHandler[CallbackContext | Any]]:
-    # ToDo: add handler to set timezone
     return [
         CommandHandler('start', start_handler),
         CommandHandler('help', help_handler),

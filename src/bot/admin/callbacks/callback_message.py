@@ -39,7 +39,6 @@ async def callback_message_handler(
                 InlineKeyboardButton("Нет", callback_data=CallbackKeys.cancel_msg)
             ]
         case StagesUser.administration:
-            # todo: найти юзера в кэше и если он там есть, то добавить в админов
             u = await cache.get_user_by(name=update.message.text, first=True)
             if not u:
                 text = 'Нет пользователя под именем {}, который был бы на меня подписан'.format(update.message.text)
