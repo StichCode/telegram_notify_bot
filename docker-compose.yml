@@ -7,20 +7,5 @@ services:
     command: python main.py
     environment:
     - TG_TOKEN=
-    - REDIS_HOST=redis
-    - REDIS_PORT=6379
-    - REDIS_DB=2
     - ADMIN_USERS=
-    depends_on:
-      - redis
-  redis:
-    image: redis:7.0.5
-    environment:
-    - ALLOW_EMPTY_PASSWORD=yes
-    command: redis-server --loglevel warning
-    ports:
-      - '6399:6379'
-    expose:
-      - 6379
-    volumes:
-      - ./redis-data:/data
+    restart: always
