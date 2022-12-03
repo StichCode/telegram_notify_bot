@@ -46,7 +46,7 @@ async def start_handler(
         return
 
     _ = await cache.save_user(user)
-    logger.info('Save new user: {}'.format(user))
+    logger.info('Save new user: {0} {1}'.format(user.name, user.tg_id))
 
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
