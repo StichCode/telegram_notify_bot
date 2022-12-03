@@ -23,14 +23,13 @@ def get_file(ud: UserData) -> tuple[list[User] | list[DictUser]] | None:
     df = get_xlsx(ud.file_path)
     users = []
     bad_data = []
-    for c in [ud.column_phone, ud.column_name]:
-        if c not in df.columns:
-            raise BadColumnName(c)
-    df[ud.column_name] = df[ud.column_name].fillna('')
+    logger.info(ud)
+    if ud.column_phone not in df.columns:
+        raise BadColumnName(ud.column_phone)
     df[ud.column_phone] = df[ud.column_phone].fillna('')
     for u in df.to_dict(orient='records'):
         try:
-            users.append(User(tg_id=1, name=u[ud.column_name], phone=u[ud.column_phone]))
+            users.append(User(tg_id=1, phone=u[ud.column_phone]))
         except (ValueError, BadPhoneNumber) as ex:
             bad_data.append(u)
             logger.error("Bad data for parsing: {}".format(u))

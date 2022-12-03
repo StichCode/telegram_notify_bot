@@ -4,7 +4,6 @@ from enum import StrEnum
 class StagesUser(StrEnum):
     create_message = 'create_message'
 
-    column_name = 'column_name'
     column_phone = 'column_phone'
 
     upload_file = 'upload_file'
@@ -19,7 +18,6 @@ class KeysStorage(StrEnum):
     message = 'message'
 
     column_phone = 'column_phone'
-    column_name = 'column_name'
     file_path = 'file_path'
 
 
@@ -28,7 +26,6 @@ class CallbackKeys(StrEnum):
     delete_admin = 'deleteAdmin'
 
     column_phone = 'columnPhone'
-    column_name = 'columnName'
 
     sending = 'sending'
     cancel = 'cancel'

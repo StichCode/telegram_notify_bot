@@ -29,6 +29,7 @@ async def verify_xlsx(
     try:
         users, bad_data = get_file(ud)
     except BadColumnName as ex:
+        logger.error(ex)
         await context.bot.edit_message_text(
             chat_id=callback_query.message.chat_id,
             message_id=callback_query.message.message_id,
@@ -62,19 +63,29 @@ async def verify_xlsx(
     if len(users) == 0:
         pass
     if len(users) != len(merged):
-        await context.bot.edit_message_text(
-            chat_id=callback_query.message.chat_id,
-            message_id=callback_query.message.message_id,
-            # tg_id -> 1, only for users from xlsx
-            text='Некоторые из пользователей не подписаны на меня:\n{0}\n'
-                 'Вы хотите сделать рассылку на оставшихся пользователей? ({1}/{2})'.format(
-                '\n'.join([str(u) for u in users if u.tg_id == 1]),
-                len(merged),
-                len(users)
-            ),
-            reply_markup=keyboard
-        )
-        return
+        if merged:
+            await context.bot.edit_message_text(
+                chat_id=callback_query.message.chat_id,
+                message_id=callback_query.message.message_id,
+                # tg_id -> 1, only for users from xlsx
+                text='Некоторые из пользователей не подписаны на меня:\n{0}\n'
+                     'Вы хотите сделать рассылку на оставшихся пользователей? ({1}/{2})'.format(
+                    '\n'.join([str(u) for u in users if u.tg_id == 1 and u.phone]),
+                    len(merged),
+                    len(users)
+                ),
+                reply_markup=keyboard
+            )
+            return
+        else:
+            await context.bot.edit_message_text(
+                chat_id=callback_query.message.chat_id,
+                message_id=callback_query.message.message_id,
+                # tg_id -> 1, only for users from xlsx
+                text='Никто из списка пользователей на меня не подписан:c\n'
+                     'Сначала попросите их подписаться, а потом делайте рассылку!🧡'
+            )
+            return
     await context.bot.edit_message_text(
         chat_id=callback_query.message.chat_id,
         message_id=callback_query.message.message_id,

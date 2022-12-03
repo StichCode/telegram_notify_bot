@@ -9,12 +9,12 @@ from src.errors import BadPhoneNumber
 
 class User(BaseModel):
     tg_id: int
-    name: str = ''
+    name: str | None = None
     phone: str | None = ''
     admin: bool = False
 
     def __str__(self) -> str:
-        return "|{0:15s}|{1:10s}|{2:32}".format(str(self.tg_id), self.name, self.phone)
+        return "{0:32}".format(self.phone)
 
     @validator('name', pre=True)
     def check_name(cls, v: str) -> str | None:
