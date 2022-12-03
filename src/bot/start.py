@@ -29,10 +29,10 @@ async def start_handler(
     )
     u = await cache.get_user_by(user.tg_id, user.name, first=True)
     if u:
-        msg = msgs.if_exist + msgs.if_exist_without_phone if not u.phone else ''
+        msg = msgs.if_exist + (msgs.if_exist_without_phone if not u.phone else '')
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=str(msg),
+            text=msg,
             reply_markup=ReplyKeyboardMarkup(
                 keyboard=[
                     [

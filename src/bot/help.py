@@ -2,6 +2,7 @@ from dependency_injector.wiring import inject, Provide
 
 from telegram import Update, ReplyKeyboardRemove
 from telegram.ext import ContextTypes
+from telegram.constants import ParseMode
 
 from src.config.messages import Help
 from src.container import Container
@@ -20,12 +21,13 @@ async def help_handler(
 
     commands = msgs.user
     if is_admin:
-        commands += msgs.admin
+        commands.update(msgs.admin)
     for k, v in commands.items():
-        text += """{0:10s}-{1}\n""".format(k, v)
+        text += """*/{0:10s}* {1}\n""".format(k, v)
 
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
         text=text,
+        parse_mode=ParseMode.MARKDOWN_V2,
         reply_markup=ReplyKeyboardRemove(),
     )

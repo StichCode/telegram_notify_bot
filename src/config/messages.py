@@ -1,3 +1,5 @@
+from typing import Any
+
 from pydantic.class_validators import root_validator, validator
 from pydantic.env_settings import SettingsSourceCallable, BaseSettings
 from pydantic.main import BaseModel
@@ -6,14 +8,22 @@ from src.bot.admin.utils import to_sublist
 from src.config.core.yaml_source import yaml_settings
 
 
-class Start(BaseModel):
+class _BM(BaseModel):
+    @validator('*')
+    def replace(cls, v: Any) -> str | None:
+        if isinstance(v, str):
+            return v.replace("\\n", "\n")
+        return v
+
+
+class Start(_BM):
     first: str
     if_exist: str
     if_exist_without_phone: str
     complete_save: str
 
 
-class Help(BaseModel):
+class Help(_BM):
     message: str
     user: dict[str, str]
     admin: dict[str, str]
@@ -24,12 +34,12 @@ class Help(BaseModel):
             return {d[0]: d[1] for d in to_sublist(v, sep=2)}
 
 
-class Users(BaseModel):
+class Users(_BM):
     columns: list[str]
     message: str
 
 
-class Admins(BaseModel):
+class Admins(_BM):
     first: str
     create_admin: str
     delete_admin: str
@@ -39,7 +49,7 @@ class Admins(BaseModel):
     success: str
 
 
-class Mail(BaseModel):
+class Mail(_BM):
     first: str
     verify_msg: str
     cancel_msg: str
@@ -55,11 +65,11 @@ class Mail(BaseModel):
     final_msg: str
 
 
-class DefaultMsg(BaseModel):
+class DefaultMsg(_BM):
     stage_fail: str
 
 
-class Buttons(BaseModel):
+class Buttons(_BM):
     send_phone: str
     add_admin: str
     delete_admin: str
