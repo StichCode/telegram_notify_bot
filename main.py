@@ -39,7 +39,7 @@ class App:
                 sys.modules["src.bot.admin.callbacks.callback_query"],
                 sys.modules["src.bot.admin.callbacks.callback_phone"],
                 sys.modules["src.bot.admin.handlers.admins"],
-
+                sys.modules["src.bot.admin.functions.verification_xlsx_file"],
             ]
         )
         self._container.init_resources()

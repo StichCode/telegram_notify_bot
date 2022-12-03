@@ -18,6 +18,7 @@ async def tfs_notify_task(
     :return:
     """
     sends = 0
+    not_send = []
     for user in users:
         try:
             await context.bot.send_message(
@@ -28,6 +29,7 @@ async def tfs_notify_task(
             logger.info('send {} message: {}'.format(user.tg_id, message))
         except Exception as ex:
             logger.exception(ex)
+            not_send.append(user)
     logger.info('Sends {0}/{1}'.format(sends, len(users)))
     return sends
 

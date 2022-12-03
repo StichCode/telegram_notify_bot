@@ -4,6 +4,7 @@ from dependency_injector.wiring import inject, Provide
 
 from loguru import logger
 
+from src.config.messages import Mail
 from src.container import Container
 from src.storage.cache import Cache
 from src.storage.enums import KeysStorage, StagesUser
@@ -13,7 +14,8 @@ from src.storage.enums import KeysStorage, StagesUser
 async def mail_handler(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
-    cache: Cache = Provide[Container.cache]
+    cache: Cache = Provide[Container.cache],
+    msgs: Mail = Provide[Container.messages.provided.mail]
 ) -> None:
     """
     Workflow sender:
@@ -23,10 +25,6 @@ async def mail_handler(
         4. Проверка пользователей и файла
         5. Подтверждение и после рассылка писем
 
-    :param update:
-    :param context:
-    :param cache:
-    :return:
     """
     if not await cache.is_admin(update.effective_user.id):
         logger.info('User {} try to get admins route'.format(update.effective_user.name))
@@ -34,7 +32,7 @@ async def mail_handler(
 
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text='Перед началом рассылки введите сообщение для рассылки:',
+        text=msgs.first,
         reply_markup=ReplyKeyboardRemove()
     )
     context.user_data[KeysStorage.stage] = StagesUser.create_message

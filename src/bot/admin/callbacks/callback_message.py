@@ -4,6 +4,7 @@ from telegram.ext import ContextTypes
 from dependency_injector.wiring import inject, Provide
 from loguru import logger
 
+from src.config.messages import Messages
 from src.container import Container
 from src.storage.cache import Cache
 from src.storage.enums import KeysStorage, StagesUser, CallbackKeys
@@ -13,10 +14,11 @@ from src.storage.enums import KeysStorage, StagesUser, CallbackKeys
 async def callback_message_handler(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
-    cache: Cache = Provide[Container.cache]
+    cache: Cache = Provide[Container.cache],
+    msgs: Messages = Provide[Container.messages]
 ) -> None:
     if not await cache.is_admin(update.effective_user.id):
-        logger.info('User {} try to get admins route'.format(update.effective_user.name))
+        logger.debug('User {} try to get admins route'.format(update.effective_user.name))
         logger.debug("User: {}, send: {}".format(update.effective_user.id, update.message.text))
         return
     btns = None
@@ -26,24 +28,21 @@ async def callback_message_handler(
         logger.info('Something wrong with stage of user: {}'.format(stage))
         await context.bot.send_message(
             update.effective_user.id,
-            text='Что то произошло на сервере, попробуйте начать сначала:c'
+            text=msgs.default_msg.stage_fail
         )
         return
 
     match stage:
         case StagesUser.create_message:
             context.user_data[KeysStorage.message] = update.message.text
-            text = 'Вы уверены что хотите разослать это сообщение:\n\n{}'.format(update.message.text)
+            text = msgs.mail.verify_msg.format(update.message.text)
             btns = [
-                InlineKeyboardButton("Да", callback_data=CallbackKeys.accept_msg),
-                InlineKeyboardButton("Нет", callback_data=CallbackKeys.cancel_msg)
+                InlineKeyboardButton(msgs.buttons.default_yes, callback_data=CallbackKeys.accept_msg),
+                InlineKeyboardButton(msgs.buttons.default_no, callback_data=CallbackKeys.cancel_msg)
             ]
         case StagesUser.administration:
             u = await cache.get_user_by(name=update.message.text, first=True)
-            if not u:
-                text = 'Нет пользователя под именем {}, который был бы на меня подписан'.format(update.message.text)
-            else:
-                text = 'Пользователь {} успешно повышен до администратора!'.format(update.message.text)
+            text = msgs.admins.fail_not_subscribe if not u else msgs.admins.success
             u.admin = True
             await cache.update_user(u)
         case _:

@@ -7,6 +7,7 @@ from loguru import logger
 from src.bot.admin.functions.chose_coolumns import choose_columns
 from src.bot.admin.tasks import tfs_notify_task
 from src.bot.admin.utils import get_file, merge_users, to_sublist
+from src.config.messages import Messages
 from src.container import Container
 from src.dto.user_data import UserData
 from src.storage.cache import Cache
@@ -17,7 +18,8 @@ from src.storage.enums import KeysStorage, StagesUser, CallbackKeys
 async def callback_query_handler(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
-    cache: Cache = Provide[Container.cache]
+    cache: Cache = Provide[Container.cache],
+    msgs: Messages = Provide[Container.messages]
 ) -> None:
     q = update.callback_query
     await q.answer()
@@ -32,7 +34,7 @@ async def callback_query_handler(
         logger.error('Something wrong with stage of user: {}'.format(stage))
         await context.bot.send_message(
             update.effective_user.id,
-            text='Что то произошло на сервере, попробуйте начать сначала:c'
+            text=msgs.default_msg.stage_fail
         )
         return
 
@@ -43,10 +45,10 @@ async def callback_query_handler(
     match choice:
         case CallbackKeys.cancel_msg:
             context.user_data[KeysStorage.stage] = StagesUser.create_message
-            text = 'Введите сообщение по новой!'
+            text = msgs.mail.cancel_msg
         case CallbackKeys.accept_msg:
             context.user_data[KeysStorage.stage] = StagesUser.upload_file
-            text = 'Теперь загрузите ваш xlsx файл 🧡'
+            text = msgs.mail.accept_msg
         case CallbackKeys.sending:
             context.user_data[KeysStorage.stage] = StagesUser.upload_file
             ud = UserData(**context.user_data)
@@ -57,19 +59,19 @@ async def callback_query_handler(
                 users=users,
                 message=ud.message
             )
-            text = 'Сообщения разосланы: {}/{}'.format(sends, len(users))
+            text = msgs.mail.final_msg.format(sends, len(users))
         case CallbackKeys.cancel:
-            text = 'Значит как только всё будет готово возвращайтесь к нам снова и начинайте сначала!'
+            text = msgs.mail.error_msg
         case CallbackKeys.create_admin:
 
             await context.bot.edit_message_text(
                 chat_id=q.message.chat_id,
                 message_id=q.message.message_id,
-                text='Введите имя пользователя (он должен уже быть подписан на меня!)'
+                text=msgs.admins.create_admin
             )
             return
         case CallbackKeys.delete_admin:
-            text = 'Выберите пользователя у которого хотите убрать права администратора:'
+            text = msgs.admins.delete_admin
             cur_username = update.effective_user.name.replace('@', '')
             btns = to_sublist(
                 [
@@ -79,7 +81,7 @@ async def callback_query_handler(
             )
             keyboard = InlineKeyboardMarkup(inline_keyboard=btns)
             if not btns:
-                text = 'Нет пользователей которых можно понизить:D'
+                text = msgs.admins.no_users
                 keyboard = None
             await context.bot.edit_message_text(
                 chat_id=q.message.chat_id,
@@ -97,14 +99,14 @@ async def callback_query_handler(
                     await context.bot.edit_message_text(
                         chat_id=q.message.chat_id,
                         message_id=q.message.message_id,
-                        text='Пользователь {} лишен прав администратора!'.format(u.name),
+                        text=msgs.admins.take_away_admin.format(u.name),
                     )
                     return
                 else:
                     logger.error('WTF with db and users')
             # default
             logger.error('Something wrong: stage: {}, user: {}, callback: {}'.format(stage, q.message.id, choice))
-            text = 'Что-то произошло не так, попробуйте начать с начала:3'
+            text = msgs.default_msg.stage_fail
 
     await context.bot.edit_message_text(
         chat_id=q.message.chat_id,

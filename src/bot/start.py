@@ -4,6 +4,7 @@ from dependency_injector.wiring import inject, Provide
 
 from loguru import logger
 
+from src.config.messages import Start, Buttons
 from src.container import Container
 from src.dto.user import User
 from src.storage.cache import Cache
@@ -14,15 +15,12 @@ async def start_handler(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
     cache: Cache = Provide[Container.cache],
-    default_admins: list[int] = Provide[Container.config.provided.default_admins]
+    default_admins: list[int] = Provide[Container.config.provided.default_admins],
+    msgs: Start = Provide[Container.messages.provided.start],
+    btns: Buttons = Provide[Container.messages.provided.buttons],
 ) -> None:
     """
     Start message for users
-    :param default_admins:
-    :param cache:
-    :param update:
-    :param context:
-    :return:
     """
     user = User(
         tg_id=update.effective_user.id,
@@ -31,20 +29,14 @@ async def start_handler(
     )
     u = await cache.get_user_by(user.tg_id, user.name, first=True)
     if u:
-        msg = 'Вы уже подписаны на нашу рассылку, как только мы будем готовы ' \
-              'мы вам напишем!'
-        footer = '\n\nС любовью @trip_for_students 🧡'
-        if not u.phone:
-            msg += '\nНо у нас всё ещё нет вашего телефона,\n' \
-                   'нам будет затруднительно найти вас для рассылки вовремя,\n' \
-                   'пожалуйста поделитесь с нами телефоном!:3\n\nДля этого нажмите на кнопку!'
+        msg = msgs.if_exist + msgs.if_exist_without_phone if not u.phone else ''
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=str(msg + footer),
+            text=str(msg),
             reply_markup=ReplyKeyboardMarkup(
                 keyboard=[
                     [
-                        KeyboardButton('Поделится телефоном', request_contact=True),
+                        KeyboardButton(btns.send_phone, request_contact=True),
                     ],
                 ],
                 resize_keyboard=True,
@@ -58,14 +50,11 @@ async def start_handler(
 
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text='Спасибо что подписались на нас!\n'
-             'Предоставьте так же нам информацию о своем номере телефона, '
-             'что бы мы могли найти вас в наших списках:3\n\n'
-             'С любовью @trip_for_students 🧡',
+        text=msgs.first,
         reply_markup=ReplyKeyboardMarkup(
             keyboard=[
                 [
-                    KeyboardButton('Поделится телефоном', request_contact=True),
+                    KeyboardButton(btns.send_phone, request_contact=True),
                 ]
             ],
             resize_keyboard=True,

@@ -5,6 +5,7 @@ from dependency_injector.wiring import inject, Provide
 from loguru import logger
 
 from src.bot.admin.utils import get_xlsx, to_sublist
+from src.config.messages import Messages
 from src.container import Container
 from src.storage.cache import Cache
 from src.storage.enums import KeysStorage, StagesUser, CallbackKeys
@@ -14,7 +15,8 @@ from src.storage.enums import KeysStorage, StagesUser, CallbackKeys
 async def callback_file_handler(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
-    cache: Cache = Provide[Container.cache]
+    cache: Cache = Provide[Container.cache],
+    msgs: Messages = Provide[Container.messages]
 ) -> None:
     if not await cache.is_admin(update.effective_user.id):
         logger.info('User {} try to get admins route'.format(update.effective_user.name))
@@ -25,7 +27,7 @@ async def callback_file_handler(
         logger.error('Something wrong with stage: {}'.format(stage))
         await context.bot.send_message(
             update.effective_user.id,
-            text='Что то произошло на сервере, попробуйте начать сначала:c'
+            text=msgs.default_msg.stage_fail
         )
         return
 
@@ -33,7 +35,7 @@ async def callback_file_handler(
     if not doc and not doc.file_name.endswith('.xlsx'):
         await context.bot.send_message(
             update.effective_user.id,
-            text='Вы прислали файл не правильного формата, попробуйте снова:3'
+            text=msgs.mail.bad_format_file
         )
         return
 
@@ -49,7 +51,7 @@ async def callback_file_handler(
     )
     await context.bot.send_message(
         update.effective_chat.id,
-        text='Теперь выберите колонку которая содержит *номер пользователя*:',
+        text=msgs.mail.choose_column_name,
         parse_mode=ParseMode.MARKDOWN_V2,
         reply_markup=InlineKeyboardMarkup(inline_keyboard=btns)
     )

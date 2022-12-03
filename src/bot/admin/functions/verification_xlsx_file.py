@@ -1,19 +1,25 @@
 from telegram import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ContextTypes
 
+from dependency_injector.wiring import inject, Provide
+
 from loguru import logger
 
 from src.bot.admin.utils import get_file, merge_users
+from src.config.messages import Messages
+from src.container import Container
 from src.dto.user_data import UserData
 from src.errors import BadColumnName
 from src.storage.cache import Cache
 from src.storage.enums import CallbackKeys
 
 
+@inject
 async def verify_xlsx(
     context: ContextTypes.DEFAULT_TYPE,
     callback_query: CallbackQuery,
-    cache: Cache
+    cache: Cache,
+    msgs: Messages = Provide[Container.messages]
 ) -> None:
     try:
         ud = UserData(**context.user_data)
@@ -22,7 +28,7 @@ async def verify_xlsx(
         await context.bot.edit_message_text(
             chat_id=callback_query.message.chat_id,
             message_id=callback_query.message.message_id,
-            text='Что-то пошло не так, попробуйте сначала 🙈🙈🙈'
+            text=msgs.default_msg.stage_fail
         )
         return
 
@@ -33,16 +39,14 @@ async def verify_xlsx(
         await context.bot.edit_message_text(
             chat_id=callback_query.message.chat_id,
             message_id=callback_query.message.message_id,
-            text='При проверке xlsx, файла произошла ошибка,\n'
-                 'выбранное вами поле {} не присутствует в xlsx файле.\n'
-                 'Попробуйте снова, чуть позже, я пока сообщу администратору.'.format(ex.column)
+            text=msgs.mail.xlsx_column_fail.format(ex.column)
         )
         return
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [
-                InlineKeyboardButton("Да", callback_data=CallbackKeys.sending),
-                InlineKeyboardButton("Нет", callback_data=CallbackKeys.cancel)
+                InlineKeyboardButton(msgs.buttons.default_yes, callback_data=CallbackKeys.sending),
+                InlineKeyboardButton(msgs.buttons.default_no, callback_data=CallbackKeys.cancel)
             ]
         ],
     )
@@ -50,10 +54,7 @@ async def verify_xlsx(
         await context.bot.edit_message_text(
             chat_id=callback_query.message.chat_id,
             message_id=callback_query.message.message_id,
-            text='При проверке xlsx файла, '
-                 'произошла ошибка при валидации этих пользователей:\n{}\n'
-                 'Всё ещё хотите сделать рассылку на оставшихся пользователей? ({}/{})'
-                 ''.format('\n'.join(bad_data), len(users), len(bad_data)),
+            text=msgs.mail.bad_data.format('\n'.join(bad_data), len(users), len(bad_data)),
             reply_markup=keyboard
         )
         return
@@ -68,11 +69,9 @@ async def verify_xlsx(
                 chat_id=callback_query.message.chat_id,
                 message_id=callback_query.message.message_id,
                 # tg_id -> 1, only for users from xlsx
-                text='Некоторые из пользователей не подписаны на меня:\n{0}\n'
-                     'Вы хотите сделать рассылку на оставшихся пользователей? ({1}/{2})'.format(
+                text=msgs.mail.not_subs.format(
                     '\n'.join([str(u) for u in users if u.tg_id == 1 and u.phone]),
-                    len(merged),
-                    len(users)
+                    len(merged), len(users)
                 ),
                 reply_markup=keyboard
             )
@@ -82,14 +81,12 @@ async def verify_xlsx(
                 chat_id=callback_query.message.chat_id,
                 message_id=callback_query.message.message_id,
                 # tg_id -> 1, only for users from xlsx
-                text='Никто из списка пользователей на меня не подписан:c\n'
-                     'Сначала попросите их подписаться, а потом делайте рассылку!🧡'
+                text=msgs.mail.not_subs_all
             )
             return
     await context.bot.edit_message_text(
         chat_id=callback_query.message.chat_id,
         message_id=callback_query.message.message_id,
-        text='Все пользователи полученные в файле подписаны на меня 🧡\n'
-             'Начинаю рассылку?',
+        text=msgs.mail.pre_send_msg,
         reply_markup=keyboard
     )

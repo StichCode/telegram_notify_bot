@@ -13,7 +13,6 @@ DictUser = dict[str, str]
 def get_xlsx(file_url: str) -> pd.DataFrame:
     resp = requests.get(file_url, verify=False)
     df = pd.read_excel(resp.content)
-
     # pre-prettify df columns
     df.rename(columns={c: c.strip().lower() for c in df.columns}, inplace=True)
     return df

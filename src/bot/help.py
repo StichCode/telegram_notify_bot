@@ -3,6 +3,7 @@ from dependency_injector.wiring import inject, Provide
 from telegram import Update, ReplyKeyboardRemove
 from telegram.ext import ContextTypes
 
+from src.config.messages import Help
 from src.container import Container
 from src.storage.cache import Cache
 
@@ -11,27 +12,17 @@ from src.storage.cache import Cache
 async def help_handler(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
-    cache: Cache = Provide[Container.cache]
+    cache: Cache = Provide[Container.cache],
+    msgs: Help = Provide[Container.messages.provided.help]
 ) -> None:
     is_admin = await cache.is_admin(update.effective_user.id)
-    text = "Команды доступны вам для использования {}:\n".format(
-        'admin' if is_admin else 'user'
-    )
+    text = msgs.message.format('admin' if is_admin else 'user')
 
-    commands = [
-        ["/start", "Зарегистрироваться для получения уведомлений о ваших путешествиях {}".format(
-            update.effective_user.name
-        )],
-    ]
+    commands = msgs.user
     if is_admin:
-        commands = [
-            ["/mail", "Создает новую рассылку сообщений по пользователям"],
-            ["/users", "Получение пользователей подписанных на рассылку"],
-            ["/admins", "Изменить администраторов"],
-            ["/help", "Возвращает это сообщение"]
-        ]
-    for command in commands:
-        text += """{0:10s}-{1}\n""".format(command[0], command[1])
+        commands += msgs.admin
+    for k, v in commands.items():
+        text += """{0:10s}-{1}\n""".format(k, v)
 
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
