@@ -1,0 +1,11 @@
+version: "3"
+services:
+  bot:
+    build:
+      context: ./
+      dockerfile: $PWD/Dockerfile
+    command: python main.py
+    environment:
+    - TG_TOKEN=
+    - ADMIN_USERS=
+    restart: always
