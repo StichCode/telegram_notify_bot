@@ -32,6 +32,7 @@ class App:
                 sys.modules[__name__],
                 sys.modules["src.bot.help"],
                 sys.modules["src.bot.start"],
+                sys.modules["src.bot.tours"],
                 sys.modules["src.bot.admin.handlers.mail"],
                 sys.modules["src.bot.admin.handlers.users"],
                 sys.modules["src.bot.admin.callbacks.callback_file"],

@@ -1,10 +1,10 @@
-from telegram import Update, KeyboardButton, ReplyKeyboardMarkup, InlineKeyboardButton
+from telegram import Update, KeyboardButton, ReplyKeyboardMarkup
 from telegram.ext import ContextTypes
 from dependency_injector.wiring import inject, Provide
 
 from loguru import logger
 
-from src.bot.admin.functions.get_pic_cat import get_photo_cat
+from src.bot.functions.get_pic_cat import get_photo_cat
 from src.config.messages import Start, Buttons
 from src.container import Container
 from src.dto.user import User
