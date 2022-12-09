@@ -1,3 +1,18 @@
+## 0.5.0 (2022-12-09)
+
+### Feat
+
+- optimize download cats imgs
+- adding new command for users -> nearest tours
+- start create func
+
+### Fix
+
+- messages fixes
+- some small fixes
+- messages(2)
+- message fix
+
 ## 0.4.0 (2022-12-09)
 
 ### Feat
