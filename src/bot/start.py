@@ -4,6 +4,7 @@ from dependency_injector.wiring import inject, Provide
 
 from loguru import logger
 
+from src.bot.admin.functions.get_pic_cat import get_photo_cat
 from src.config.messages import Start, Buttons
 from src.container import Container
 from src.dto.user import User
@@ -43,6 +44,13 @@ async def start_handler(
                 one_time_keyboard=True,
             ) if not u.phone else None
         )
+        # todo: stupid construct
+        if msg == msgs.if_exist:
+            await context.bot.send_photo(
+                chat_id=update.effective_chat.id,
+                # so slow:c
+                photo=await get_photo_cat()
+            )
         return
 
     _ = await cache.save_user(user)
