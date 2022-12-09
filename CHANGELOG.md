@@ -1,3 +1,9 @@
+## 0.4.0 (2022-12-09)
+
+### Feat
+
+- fix messages + add future handler for nearest tours + added send cats photo for message
+
 ## 0.3.0 (2022-12-03)
 
 ### Feat
