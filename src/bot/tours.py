@@ -22,19 +22,19 @@ async def tours_handler(
     if not await cache.is_admin(update.effective_user.id):
         logger.info('User {} try to get admins route'.format(update.effective_user.name))
         return
-    tb = get_prettify_data(cfg)
-    if tb:
-        await context.bot.send_message(
-            chat_id=update.effective_chat.id,
-            text='Ближайшие туры в которые вы можете поехать с нами:\n ```{}```'.format(tb),
-            parse_mode=ParseMode.MARKDOWN_V2,
-            reply_markup=ReplyKeyboardRemove()
-        )
-    else:
-        await context.bot.send_message(
-            chat_id=update.effective_chat.id,
-            # todo: adding notify if no free tours, when get new free tour
-            text='В ближайшее время нет свободных мест, но как только появятся мы вам сообщим 🧡',
-            parse_mode=ParseMode.MARKDOWN_V2,
-            reply_markup=ReplyKeyboardRemove()
-        )
+    # tb = get_prettify_data(cfg)
+    # if tb:
+    #     await context.bot.send_message(
+    #         chat_id=update.effective_chat.id,
+    #         text='Ближайшие туры в которые вы можете поехать с нами:\n ```{}```'.format(tb),
+    #         parse_mode=ParseMode.MARKDOWN_V2,
+    #         reply_markup=ReplyKeyboardRemove()
+    #     )
+    # else:
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        # todo: adding notify if no free tours, when get new free tour
+        text='В ближайшее время нет свободных мест, но как только появятся мы вам сообщим 🧡',
+        parse_mode=ParseMode.MARKDOWN_V2,
+        reply_markup=ReplyKeyboardRemove()
+    )
