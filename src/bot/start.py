@@ -9,6 +9,7 @@ from config.messages import Start, Buttons
 from src.container import Container
 from src.dto.user import User
 from src.storage.cache import Cache
+from src.storage.simple_cache import MeowCache
 
 
 @inject
@@ -19,6 +20,7 @@ async def start_handler(
     default_admins: list[int] = Provide[Container.config.provided.default_admins],
     msgs: Start = Provide[Container.messages.provided.start],
     btns: Buttons = Provide[Container.messages.provided.buttons],
+    meows: MeowCache = Provide[Container.meow]
 ) -> None:
     """
     Start message for users
@@ -48,8 +50,7 @@ async def start_handler(
         if msg == msgs.if_exist:
             await context.bot.send_photo(
                 chat_id=update.effective_chat.id,
-                # so slow:c
-                photo=await get_photo_cat()
+                photo=meows.get()
             )
         return
 

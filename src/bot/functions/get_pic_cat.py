@@ -1,12 +1,25 @@
-import requests
+import aiohttp
+from loguru import logger
 
 
-async def get_photo_cat() -> bytes | None:
+async def _get_meows_links(length: int) -> list[str]:
+    meows = []
     url = 'https://aws.random.cat/meow'
-    # todo: do by aiohttp
-    resp = requests.get(url)
-    if resp.status_code != 200:
-        return None
-    meow_photo = resp.json()['file']
-    resp = requests.get(meow_photo)
-    return resp.content
+    async with aiohttp.ClientSession() as session:
+        for i in range(length):
+            async with session.get(url) as response:
+                link = await response.json()
+                meows.append(link.get('file', None))
+    return meows
+
+
+async def get_photo_cat(length: int = 60) -> list[bytes]:
+    meows = await _get_meows_links(length)
+    logger.info("len {}".format(len(meows)))
+    images = []
+    async with aiohttp.ClientSession() as session:
+        for link in meows:
+            async with session.get(link) as resp:
+                d = await resp.content.read()
+                images.append(d)
+    return images

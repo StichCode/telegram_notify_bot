@@ -1,3 +1,4 @@
+import asyncio
 import sys
 
 import sentry_sdk
@@ -10,6 +11,7 @@ from telegram.ext import ApplicationBuilder, Application, Defaults, JobQueue
 from src.bot import get_handlers
 from src.bot.admin.tasks import create_db
 from src.container import Container
+from src.tasks.cache_meows import cache_meows_task
 
 
 class App:
@@ -17,6 +19,7 @@ class App:
     def __init__(self) -> None:
         self._container = Container()
         self.__init_container()
+        self.run_caching()
         self._app = self._init_app()
         self.__init_tracers()
 
@@ -41,6 +44,7 @@ class App:
                 sys.modules["src.bot.admin.callbacks.callback_phone"],
                 sys.modules["src.bot.admin.handlers.admins"],
                 sys.modules["src.bot.admin.functions.verification_xlsx_file"],
+                sys.modules["src.tasks.cache_meows"],
             ]
         )
         self._container.init_resources()
@@ -51,9 +55,12 @@ class App:
         _app: Application = ApplicationBuilder().token(self._container.config().tg_token).defaults(defaults).build()
         _app.add_handlers(get_handlers())
         jq = _app.job_queue
-        jq.run_once(create_db, when=0.1, name='init_db')
-
+        jq.run_once(create_db, when=10, name='init_db')
         return _app
+
+    def run_caching(self) -> None:
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(cache_meows_task())
 
     def run(self) -> None:
         logger.info('bot has been started :3')
