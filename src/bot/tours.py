@@ -6,6 +6,8 @@ from telegram.constants import ParseMode
 from telegram.ext import ContextTypes
 
 # from src.bot.functions.get_nearest_tours import get_xlsx_data, prettify_data
+from config.config import GoogleExcelConfig
+from src.bot.functions.get_nearest_tours import get_prettify_data
 from src.container import Container
 from src.storage.cache import Cache
 
@@ -15,17 +17,24 @@ async def tours_handler(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
     cache: Cache = Provide[Container.cache],
+    cfg: GoogleExcelConfig = Provide[Container.config.provided.google_cfg]
 ) -> None:
     if not await cache.is_admin(update.effective_user.id):
         logger.info('User {} try to get admins route'.format(update.effective_user.name))
         return
-    # d_values = get_xlsx_data()
-    # columns = ['month', 'num', 'name', 'buy', 'total']
-    # table = prettify_data(pd.DataFrame(d_values[0:], columns=columns))
-
-    await context.bot.send_message(
-        chat_id=update.effective_chat.id,
-        text='Мы пока делаем эту функцию, но скоро всё будет готово 🧡',
-        parse_mode=ParseMode.MARKDOWN_V2,
-        reply_markup=ReplyKeyboardRemove()
-    )
+    tb = get_prettify_data(cfg)
+    if tb:
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text='Ближайшие туры в которые вы можете поехать с нами:\n ```{}```'.format(tb),
+            parse_mode=ParseMode.MARKDOWN_V2,
+            reply_markup=ReplyKeyboardRemove()
+        )
+    else:
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            # todo: adding notify if no free tours, when get new free tour
+            text='В ближайшее время нет свободных мест, но как только появятся мы вам сообщим 🧡',
+            parse_mode=ParseMode.MARKDOWN_V2,
+            reply_markup=ReplyKeyboardRemove()
+        )

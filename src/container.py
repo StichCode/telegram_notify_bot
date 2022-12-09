@@ -1,7 +1,7 @@
 from dependency_injector import containers, providers
 
-from src.config.config import Configuration
-from src.config.messages import Messages
+from config.config import Configuration
+from config.messages import Messages
 from src.storage.cache import Cache
 
 from src.storage.sql_transport import SQLTransport

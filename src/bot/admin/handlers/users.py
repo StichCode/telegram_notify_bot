@@ -7,7 +7,7 @@ from dependency_injector.wiring import inject, Provide
 
 from loguru import logger
 
-from src.config.messages import Users
+from config.messages import Users
 from src.container import Container
 from src.storage.cache import Cache
 

@@ -3,7 +3,7 @@ from asyncpg.connection import Connection
 
 from loguru import logger
 
-from src.config.config import Configuration
+from config.config import Configuration
 from src.dto.user import User
 
 

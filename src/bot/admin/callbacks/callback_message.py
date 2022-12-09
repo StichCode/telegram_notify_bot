@@ -1,10 +1,10 @@
-from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup
+from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ContextTypes
 
 from dependency_injector.wiring import inject, Provide
 from loguru import logger
 
-from src.config.messages import Messages
+from config.messages import Messages
 from src.container import Container
 from src.storage.cache import Cache
 from src.storage.enums import KeysStorage, StagesUser, CallbackKeys

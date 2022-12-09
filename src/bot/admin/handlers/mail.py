@@ -4,7 +4,7 @@ from dependency_injector.wiring import inject, Provide
 
 from loguru import logger
 
-from src.config.messages import Mail
+from config.messages import Mail
 from src.container import Container
 from src.storage.cache import Cache
 from src.storage.enums import KeysStorage, StagesUser

@@ -5,7 +5,7 @@ from dependency_injector.wiring import inject, Provide
 from loguru import logger
 
 from src.bot.functions.get_pic_cat import get_photo_cat
-from src.config.messages import Start, Buttons
+from config.messages import Start, Buttons
 from src.container import Container
 from src.dto.user import User
 from src.storage.cache import Cache

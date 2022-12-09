@@ -6,7 +6,7 @@ from dependency_injector.wiring import inject, Provide
 from loguru import logger
 
 from src.bot.admin.utils import get_file, merge_users
-from src.config.messages import Messages
+from config.messages import Messages
 from src.container import Container
 from src.dto.user_data import UserData
 from src.errors import BadColumnName

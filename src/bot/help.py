@@ -4,7 +4,7 @@ from telegram import Update, ReplyKeyboardRemove
 from telegram.ext import ContextTypes
 from telegram.constants import ParseMode
 
-from src.config.messages import Help
+from config.messages import Help
 from src.container import Container
 from src.storage.cache import Cache
 
