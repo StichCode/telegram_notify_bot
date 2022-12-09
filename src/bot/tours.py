@@ -25,7 +25,7 @@ async def tours_handler(
 
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text="Ближайшие туры с свободными местечками: {}",
+        text='Мы пока делаем эту функцию, но скоро всё будет готово 🧡',
         parse_mode=ParseMode.MARKDOWN_V2,
         reply_markup=ReplyKeyboardRemove()
     )
