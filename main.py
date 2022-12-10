@@ -59,8 +59,7 @@ class App:
         return _app
 
     def run_caching(self) -> None:
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(cache_meows_task())
+        asyncio.run(cache_meows_task())
 
     def run(self) -> None:
         logger.info('bot has been started :3')
