@@ -41,10 +41,15 @@ async def callback_message_handler(
                 InlineKeyboardButton(msgs.buttons.default_no, callback_data=CallbackKeys.cancel_msg)
             ]
         case StagesUser.administration:
-            u = await cache.get_user_by(name=update.message.text, first=True)
-            text = msgs.admins.fail_not_subscribe if not u else msgs.admins.success
-            u.admin = True
-            await cache.update_user(u)
+            u = await cache.get_user_by(name=update.message.text.strip(), first=True)
+            if u:
+                text = msgs.admins.fail_not_subscribe if not u else msgs.admins.success
+                text = text.format(u.name)
+                u.admin = True
+                await cache.update_user(u)
+            else:
+                logger.debug('fail for update admin')
+                text = 'Что то пошло не так:c'
         case _:
             logger.error('Something strange happens with stage: `{}`'.format(stage))
             return
