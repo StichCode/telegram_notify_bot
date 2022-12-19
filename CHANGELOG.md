@@ -1,3 +1,41 @@
+## 0.6.0 (2022-12-19)
+
+### Feat
+
+- update tours login
+- enable tours
+
+### Fix
+
+- small fixes for message
+- regexp for numbers of other countres
+
+## 0.5.4 (2022-12-15)
+
+### Fix
+
+- delete admin
+
+## 0.5.3 (2022-12-15)
+
+### Fix
+
+- asyncio
+
+## 0.5.2 (2022-12-15)
+
+### Fix
+
+- dockerfile
+
+## 0.5.1 (2022-12-15)
+
+### Fix
+
+- admins
+- asyncio task
+- disable tours commands
+
 ## 0.5.0 (2022-12-09)
 
 ### Feat
