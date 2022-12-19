@@ -1,12 +1,10 @@
 from __future__ import print_function
 
 import re
-from pathlib import Path
 import prettytable as pt
 import pandas as pd
-from google.auth.transport.requests import Request
+from google.oauth2 import service_account
 from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
 from loguru import logger
@@ -14,27 +12,15 @@ from loguru import logger
 from config.config import GoogleExcelConfig
 
 
-def _valid_auth(cfg: GoogleExcelConfig) -> Credentials:
-    creds = None
-    tok = Path(cfg.token)
-    creds_file = Path(cfg.credentials)
-    if tok.exists():
-        creds = Credentials.from_authorized_user_file(tok, cfg.scopes)
-    if creds and not creds.valid and creds.expired and creds.refresh_token:
-        creds.refresh(Request())
-    elif not creds:
-        flow = InstalledAppFlow.from_client_secrets_file(creds_file, cfg.scopes)
-        creds = flow.run_local_server(port=0)
-    with open(tok, 'w') as tk_file:
-        tk_file.write(creds.to_json())
+def _get_creds(credentials: str) -> Credentials:
+    creds = service_account.Credentials.from_service_account_file(credentials)
     return creds
 
 
 def _get_xlsx_from_google(cfg: GoogleExcelConfig):
-    creds = _valid_auth(cfg)
+    creds = _get_creds(cfg.credentials)
     try:
         service = build('sheets', 'v4', credentials=creds)
-
         # call the sheets API
         sheet = service.spreadsheets()
         result = sheet.values().get(spreadsheetId=cfg.sheet_id, range=cfg.range_name).execute()

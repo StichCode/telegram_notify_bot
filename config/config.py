@@ -11,7 +11,6 @@ class GoogleExcelConfig(_BS):
     const_columns: list[str] = ['month', 'num', 'name', 'count', 'total']
     sheet_id: str = Field(env='GOOGLE_SHEET_ID')
     range_name: str = Field(env='GOOGLE_RANGE_NAME')  # like: Sheet!A2:E50
-    token: str = Field(env='GOOGLE_TOKEN')
     credentials: str = Field(env='GOOGLE_CREDS')
     scopes: list[str] = ['https://www.googleapis.com/auth/spreadsheets.readonly']
 

@@ -14,7 +14,7 @@ class User(BaseModel):
     admin: bool = False
 
     def __str__(self) -> str:
-        return "{0:32}".format(self.phone)
+        return "{0} {1} {2}".format(self.tg_id, self.name, self.phone)
 
     @validator('name', pre=True)
     def check_name(cls, v: str) -> str | None:
