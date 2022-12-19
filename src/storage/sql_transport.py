@@ -53,7 +53,7 @@ class SQLTransport:
     async def get_user_by_(
         self,
         *,
-        tg_id: str | None = None,
+        tg_id: int | None = None,
         name: str | None = None,
         first: bool = False
     ) -> list[User] | User | None:

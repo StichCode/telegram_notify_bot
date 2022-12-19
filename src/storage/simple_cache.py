@@ -1,7 +1,5 @@
 import random
 
-from loguru import logger
-
 
 class MeowCache:
     def __init__(self) -> None:

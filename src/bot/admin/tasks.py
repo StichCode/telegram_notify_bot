@@ -31,6 +31,7 @@ async def tfs_notify_task(
             logger.exception(ex)
             not_send.append(user)
     logger.info('Sends {0}/{1}'.format(sends, len(users)))
+    # return info about not send to users
     return sends
 
 

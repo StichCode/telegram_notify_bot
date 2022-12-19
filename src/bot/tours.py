@@ -5,7 +5,6 @@ from telegram import Update, ReplyKeyboardRemove
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes
 
-# from src.bot.functions.get_nearest_tours import get_xlsx_data, prettify_data
 from config.config import GoogleExcelConfig
 from src.bot.functions.get_nearest_tours import get_prettify_data
 from src.container import Container

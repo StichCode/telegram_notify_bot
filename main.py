@@ -6,7 +6,7 @@ from loguru import logger
 
 import pytz
 from telegram.constants import ParseMode
-from telegram.ext import ApplicationBuilder, Application, Defaults, JobQueue
+from telegram.ext import ApplicationBuilder, Application, Defaults
 
 from src.bot import get_handlers
 from src.bot.admin.tasks import create_db

@@ -18,7 +18,6 @@ async def callback_message_handler(
     msgs: Messages = Provide[Container.messages]
 ) -> None:
     if not await cache.is_admin(update.effective_user.id):
-        logger.debug('User {} try to get admins route'.format(update.effective_user.name))
         logger.debug("User: {}, send: {}".format(update.effective_user.id, update.message.text))
         return
     btns = None

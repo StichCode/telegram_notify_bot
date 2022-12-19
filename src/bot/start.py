@@ -4,7 +4,6 @@ from dependency_injector.wiring import inject, Provide
 
 from loguru import logger
 
-from src.bot.functions.get_pic_cat import get_photo_cat
 from config.messages import Start, Buttons
 from src.container import Container
 from src.dto.user import User
@@ -27,7 +26,7 @@ async def start_handler(
     """
     user = User(
         tg_id=update.effective_user.id,
-        name=update.effective_user.name,
+        name=update.effective_user.name if update.effective_user.name else update.effective_user.first_name,
         admin=update.effective_user.id in default_admins
     )
     u = await cache.get_user_by(user.tg_id, user.name, first=True)
@@ -42,8 +41,7 @@ async def start_handler(
                         KeyboardButton(btns.send_phone, request_contact=True),
                     ],
                 ],
-                resize_keyboard=True,
-                one_time_keyboard=True,
+                resize_keyboard=True
             ) if not u.phone else None
         )
         # todo: stupid construct

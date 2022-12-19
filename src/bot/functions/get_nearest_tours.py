@@ -1,7 +1,6 @@
 from __future__ import print_function
 
 import re
-from collections import namedtuple
 from pathlib import Path
 import prettytable as pt
 import pandas as pd
