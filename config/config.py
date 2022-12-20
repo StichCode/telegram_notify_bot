@@ -1,6 +1,3 @@
-from typing import Any
-
-from pydantic.class_validators import root_validator
 from pydantic.env_settings import BaseSettings
 from pydantic.fields import Field
 
@@ -8,6 +5,14 @@ from pydantic.fields import Field
 class _BS(BaseSettings):
     class Config:
         env_file = '.env'
+
+
+class GoogleExcelConfig(_BS):
+    const_columns: list[str] = ['month', 'num', 'name', 'count', 'total']
+    sheet_id: str = Field(env='GOOGLE_SHEET_ID')
+    range_name: str = Field(env='GOOGLE_RANGE_NAME')  # like: Sheet!A2:E50
+    credentials: str = Field(env='GOOGLE_CREDS')
+    scopes: list[str] = ['https://www.googleapis.com/auth/spreadsheets.readonly']
 
 
 class PostgresConfig(_BS):
@@ -24,10 +29,5 @@ class Configuration(_BS):
     default_admins: list[int] = Field(env='ADMIN_USERS')
     sentry_dsn: str = Field('SENTRY_DSN')
 
-    pg: PostgresConfig
-
-    @root_validator(pre=True)
-    def _better_init_fabrics(cls, values: dict[str, Any]) -> dict[str, Any]:
-        if 'pg' not in values:
-            values['pg'] = PostgresConfig()
-        return values
+    pg: PostgresConfig = Field(default_factory=PostgresConfig)
+    google_cfg: GoogleExcelConfig = Field(default_factory=GoogleExcelConfig)

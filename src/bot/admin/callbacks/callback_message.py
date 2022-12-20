@@ -1,10 +1,10 @@
-from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup
+from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ContextTypes
 
 from dependency_injector.wiring import inject, Provide
 from loguru import logger
 
-from src.config.messages import Messages
+from config.messages import Messages
 from src.container import Container
 from src.storage.cache import Cache
 from src.storage.enums import KeysStorage, StagesUser, CallbackKeys
@@ -18,7 +18,6 @@ async def callback_message_handler(
     msgs: Messages = Provide[Container.messages]
 ) -> None:
     if not await cache.is_admin(update.effective_user.id):
-        logger.debug('User {} try to get admins route'.format(update.effective_user.name))
         logger.debug("User: {}, send: {}".format(update.effective_user.id, update.message.text))
         return
     btns = None
@@ -41,10 +40,15 @@ async def callback_message_handler(
                 InlineKeyboardButton(msgs.buttons.default_no, callback_data=CallbackKeys.cancel_msg)
             ]
         case StagesUser.administration:
-            u = await cache.get_user_by(name=update.message.text, first=True)
-            text = msgs.admins.fail_not_subscribe if not u else msgs.admins.success
-            u.admin = True
-            await cache.update_user(u)
+            u = await cache.get_user_by(name=update.message.text.strip(), first=True)
+            if u:
+                text = msgs.admins.fail_not_subscribe if not u else msgs.admins.success
+                text = text.format(u.name)
+                u.admin = True
+                await cache.update_user(u)
+            else:
+                logger.debug('fail for update admin')
+                text = 'Что то пошло не так:c'
         case _:
             logger.error('Something strange happens with stage: `{}`'.format(stage))
             return

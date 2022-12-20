@@ -2,7 +2,7 @@ from telegram import Update, ReplyKeyboardRemove
 from telegram.ext import ContextTypes
 from dependency_injector.wiring import inject, Provide
 
-from src.config.messages import Start
+from config.messages import Start
 from src.container import Container
 from src.storage.cache import Cache
 

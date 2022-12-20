@@ -7,7 +7,7 @@ from loguru import logger
 from src.bot.admin.functions.chose_coolumns import choose_columns
 from src.bot.admin.tasks import tfs_notify_task
 from src.bot.admin.utils import get_file, merge_users, to_sublist
-from src.config.messages import Messages
+from config.messages import Messages
 from src.container import Container
 from src.dto.user_data import UserData
 from src.storage.cache import Cache
@@ -40,7 +40,9 @@ async def callback_query_handler(
 
     admins = await cache.get_all_users(only_admins=True)
     if '_' in choice:
-        return await choose_columns(context=context, choice=choice, callback_query=q, cache=cache)
+        result = await choose_columns(context=context, choice=choice, callback_query=q, cache=cache)
+        if result is not None:
+            return result
 
     match choice:
         case CallbackKeys.cancel_msg:
@@ -63,7 +65,6 @@ async def callback_query_handler(
         case CallbackKeys.cancel:
             text = msgs.mail.error_msg
         case CallbackKeys.create_admin:
-
             await context.bot.edit_message_text(
                 chat_id=q.message.chat_id,
                 message_id=q.message.message_id,

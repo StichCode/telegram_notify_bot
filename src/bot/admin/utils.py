@@ -18,7 +18,7 @@ def get_xlsx(file_url: str) -> pd.DataFrame:
     return df
 
 
-def get_file(ud: UserData) -> tuple[list[User] | list[DictUser]] | None:
+def get_file(ud: UserData) -> tuple[list[User], list[DictUser]] | None:
     df = get_xlsx(ud.file_path)
     users = []
     bad_data = []

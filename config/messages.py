@@ -1,11 +1,11 @@
 from typing import Any
 
-from pydantic.class_validators import root_validator, validator
+from pydantic.class_validators import validator
 from pydantic.env_settings import SettingsSourceCallable, BaseSettings
 from pydantic.main import BaseModel
 
 from src.bot.admin.utils import to_sublist
-from src.config.core.yaml_source import yaml_settings
+from config.core.yaml_source import yaml_settings
 
 
 class _BM(BaseModel):
