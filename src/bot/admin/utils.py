@@ -26,12 +26,14 @@ def get_file(ud: UserData) -> tuple[list[User], list[DictUser]] | None:
     if ud.column_phone not in df.columns:
         raise BadColumnName(ud.column_phone)
     df[ud.column_phone] = df[ud.column_phone].fillna('')
-    for u in df.to_dict(orient='records'):
+    # fixme: dirty hack
+    cols = [i.replace('.0', '').strip() for i in df[ud.column_phone].dropna().astype(str).tolist()]
+    for phone in cols:
         try:
-            users.append(User(tg_id=1, phone=u[ud.column_phone]))
+            users.append(User(tg_id=1, phone=phone))
         except (ValueError, BadPhoneNumber) as ex:
-            bad_data.append(u)
-            logger.error("Bad data for parsing: {}".format(u))
+            bad_data.append(phone)
+            logger.error("Bad data for parsing: {}".format(phone))
             logger.error(ex)
             continue
     return users, bad_data

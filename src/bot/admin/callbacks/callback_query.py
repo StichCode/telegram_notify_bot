@@ -6,7 +6,7 @@ from loguru import logger
 
 from src.bot.admin.functions.chose_coolumns import choose_columns
 from src.bot.admin.tasks import tfs_notify_task
-from src.bot.admin.utils import get_file, merge_users, to_sublist
+from src.bot.admin.utils import get_file, get_xlsx, merge_users, to_sublist
 from config.messages import Messages
 from src.container import Container
 from src.dto.user_data import UserData
@@ -39,10 +39,6 @@ async def callback_query_handler(
         return
 
     admins = await cache.get_all_users(only_admins=True)
-    if '_' in choice:
-        result = await choose_columns(context=context, choice=choice, callback_query=q, cache=cache)
-        if result is not None:
-            return result
 
     match choice:
         case CallbackKeys.cancel_msg:
@@ -92,6 +88,10 @@ async def callback_query_handler(
             )
             return
         case _:
+            # fixme: please
+            _link = context.user_data.get(KeysStorage.file_path)
+            df = get_xlsx(_link) if _link else None
+
             if choice in [u.name for u in admins]:
                 u = await cache.get_user_by(name=choice, first=True)
                 if u:
@@ -105,8 +105,17 @@ async def callback_query_handler(
                     return
                 else:
                     logger.error('WTF with db and users')
+            elif df is not None:
+                for col in df.columns.tolist():
+                    if col in choice:
+                        return await choose_columns(context=context, choice=choice, callback_query=q, cache=cache)
+
             # default
-            logger.error('Something wrong: stage: {}, user: {}, callback: {}'.format(stage, q.message.id, choice))
+            logger.error(
+                'Something wrong: stage: {}, user: {}, callback: {}'.format(
+                    stage, update.effective_user.id, choice
+                )
+            )
             text = msgs.default_msg.stage_fail
 
     await context.bot.edit_message_text(

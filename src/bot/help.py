@@ -17,8 +17,7 @@ async def help_handler(
     msgs: Help = Provide[Container.messages.provided.help]
 ) -> None:
     is_admin = await cache.is_admin(update.effective_user.id)
-    text = msgs.message.format('admin' if is_admin else 'user')
-
+    text = msgs.message
     commands = msgs.user
     if is_admin:
         commands.update(msgs.admin)
