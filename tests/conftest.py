@@ -21,8 +21,6 @@ def users() -> list[User]:
         return [User(**d) for d in json.load(file)]
 
 
-
-
 @pytest_asyncio.fixture(scope="session")
 async def telegram_client():
     with TelegramClient(
