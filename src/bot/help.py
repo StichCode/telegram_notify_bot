@@ -1,4 +1,5 @@
 from dependency_injector.wiring import inject, Provide
+from loguru import logger
 
 from telegram import Update, ReplyKeyboardRemove
 from telegram.ext import ContextTypes
@@ -17,8 +18,9 @@ async def help_handler(
     msgs: Help = Provide[Container.messages.provided.help]
 ) -> None:
     is_admin = await cache.is_admin(update.effective_user.id)
+    logger.debug('user: {}, is_admin: {}'.format(update.effective_user.id, is_admin))
     text = msgs.message
-    commands = msgs.user
+    commands = msgs.user.copy()
     if is_admin:
         commands.update(msgs.admin)
     for k, v in commands.items():

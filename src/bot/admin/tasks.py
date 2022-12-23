@@ -33,16 +33,3 @@ async def tfs_notify_task(
     logger.info('Sends {0}/{1}'.format(sends, len(users)))
     # return info about not send to users
     return sends
-
-
-@inject
-async def create_db(
-    _: ContextTypes.DEFAULT_TYPE,
-    cache: Cache = Provide[Container.cache]
-) -> None:
-    """
-    init db
-    :return:
-    """
-    await cache.init_db()
-    logger.info('init db complete')

@@ -8,9 +8,6 @@ class Cache:
     def __init__(self, transport: SQLTransport) -> None:
         self._tr = transport
 
-    async def init_db(self) -> None:
-        await self._tr.create_db()
-
     async def is_admin(self, tg_id: int) -> bool:
         user = await self._tr.get_user_by_(tg_id=tg_id, first=True)
         if not user:

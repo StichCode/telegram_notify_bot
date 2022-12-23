@@ -20,18 +20,6 @@ class SQLTransport:
             database=self.cfg.db, host=self.cfg.host, port=self.cfg.port
         )
 
-    async def create_db(self) -> None:
-        conn = await self.conn()
-        cur = await conn.execute("""
-            CREATE TABLE IF NOT EXISTS {}.user (
-            id SERIAL PRIMARY KEY,
-            tg_id INTEGER NOT NULL UNIQUE,
-            name TEXT NOT NULL UNIQUE,
-            admin BOOLEAN NOT NULL,
-            phone TEXT
-            )
-        """.format(self.cfg.schema_db))
-
     async def get_all_users(self, *, only_admins: bool = False) -> list[User]:
         users = []
         conn = await self.conn()

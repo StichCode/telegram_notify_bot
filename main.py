@@ -1,5 +1,6 @@
 import asyncio
 import sys
+from threading import Event
 
 import sentry_sdk
 from loguru import logger
@@ -9,19 +10,20 @@ from telegram.constants import ParseMode
 from telegram.ext import ApplicationBuilder, Application, Defaults
 
 from src.bot import get_handlers
-from src.bot.admin.tasks import create_db
+# from src.bot.admin.tasks import create_db
 from src.container import Container
 from src.tasks.cache_meows import cache_meows_task
 
 
 class App:
 
-    def __init__(self) -> None:
+    def __init__(self, event=None) -> None:
         self._container = Container()
         self.__init_container()
         self.run_caching()
         self._app = self._init_app()
         self.__init_tracers()
+        self._ev = event
 
     def __init_tracers(self) -> None:
         sentry_sdk.init(
@@ -37,7 +39,6 @@ class App:
                 sys.modules["src.bot.start"],
                 sys.modules["src.bot.tours"],
                 sys.modules["src.bot.admin.handlers.mail"],
-                sys.modules["src.bot.admin.handlers.users"],
                 sys.modules["src.bot.admin.callbacks.callback_file"],
                 sys.modules["src.bot.admin.callbacks.callback_message"],
                 sys.modules["src.bot.admin.callbacks.callback_query"],
@@ -54,8 +55,8 @@ class App:
 
         _app: Application = ApplicationBuilder().token(self._container.config().tg_token).defaults(defaults).build()
         _app.add_handlers(get_handlers())
-        jq = _app.job_queue
-        jq.run_once(create_db, when=10, name='init_db')
+        # jq = _app.job_queue
+        # jq.run_once(create_db, when=10, name='init_db')
         return _app
 
     def run_caching(self) -> None:
@@ -64,7 +65,7 @@ class App:
 
     def run(self) -> None:
         logger.info('bot has been started :3')
-        self._app.run_polling()
+        self._app.run_polling(poll_interval=0.1)
 
 
 if __name__ == '__main__':
