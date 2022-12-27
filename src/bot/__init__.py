@@ -24,6 +24,6 @@ def get_handlers() -> list[CommandHandler[CallbackContext | Any]]:
         CommandHandler('tours', tours_handler),
         MessageHandler(filters.Document.ALL, callback=callback_file_handler),
         MessageHandler(filters.CONTACT, callback=callback_phone_handler),
-        MessageHandler(filters.TEXT & (~filters.COMMAND), callback_message_handler),
-        CallbackQueryHandler(callback_query_handler)
+        MessageHandler(filters.TEXT & (~filters.COMMAND), callback=callback_message_handler),
+        CallbackQueryHandler(callback=callback_query_handler)
     ]
